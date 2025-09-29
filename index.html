@@ -22,12 +22,6 @@
             --tile-text: #4f46e5;
             --shadow-color: rgba(0, 0, 0, 0.1);
             --modal-backdrop: rgba(17, 24, 39, 0.5);
-            
-            /* Pastel colors */
-            --pastel-1: #a7f3d0; --pastel-1-text: #065f46;
-            --pastel-2: #bae6fd; --pastel-2-text: #075985;
-            --pastel-3: #fecaca; --pastel-3-text: #991b1b;
-            --pastel-4: #fef08a; --pastel-4-text: #854d0e;
         }
 
         html.dark {
@@ -42,12 +36,6 @@
             --tile-text: #c7d2fe;
             --shadow-color: rgba(0, 0, 0, 0.4);
             --modal-backdrop: rgba(0, 0, 0, 0.7);
-
-            /* Dark pastel colors */
-            --pastel-1: #064e3b; --pastel-1-text: #d1fae5;
-            --pastel-2: #0c4a6e; --pastel-2-text: #e0f2fe;
-            --pastel-3: #7f1d1d; --pastel-3-text: #fee2e2;
-            --pastel-4: #78350f; --pastel-4-text: #fef9c3;
         }
 
         /* Basic Setup */
@@ -133,11 +121,23 @@
             background-color: var(--bg-tertiary);
             color: var(--text-primary);
         }
-        .btn-pastel-1 { background-color: var(--pastel-1); color: var(--pastel-1-text); }
-        .btn-pastel-2 { background-color: var(--pastel-2); color: var(--pastel-2-text); }
-        .btn-pastel-3 { background-color: var(--pastel-3); color: var(--pastel-3-text); }
-        .btn-pastel-4 { background-color: var(--pastel-4); color: var(--pastel-4-text); }
 
+        /* Custom Pastel & Classic Colors */
+        .bg-pastel-green { background-color: #dcfce7; }
+        .bg-pastel-blue { background-color: #dbeafe; }
+        .bg-pastel-yellow { background-color: #fef08a; }
+        .bg-pastel-red { background-color: #fee2e2; }
+        .text-pastel-green { color: #166534; }
+        .text-pastel-blue { color: #1e40af; }
+        .text-pastel-yellow { color: #854d0e; }
+        .text-pastel-red { color: #991b1b; }
+
+        .bg-classic-1 { background-color: #e0e7ff; }
+        .text-classic-1 { color: #3730a3; }
+        .bg-classic-2 { background-color: #d1fae5; }
+        .text-classic-2 { color: #065f46; }
+        .bg-classic-3 { background-color: #fef9c3; }
+        .text-classic-3 { color: #854d0e; }
 
         /* Puzzle Board */
         #puzzle-board {
@@ -155,7 +155,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* font-size is set dynamically in JS */
             font-weight: 800;
             border-radius: 12px;
             cursor: pointer;
@@ -181,8 +180,8 @@
             left: 5px;
             font-weight: bold;
             color: white;
-            text-shadow: 0px 0px 3px black, 0px 0px 3px black;
-            opacity: 0.9;
+            text-shadow: 0 0 3px black, 0 0 3px black;
+            opacity: 0.8;
             pointer-events: none;
         }
         
@@ -199,7 +198,7 @@
         <!-- ===== Main Menu Screen ===== -->
         <div id="main-menu" class="screen flex flex-col justify-between p-8">
             <header class="text-center">
-                <h1 class="text-6xl font-extrabold tracking-tighter text-[var(--accent-primary)]">15</h1>
+                <h1 class="text-7xl font-extrabold tracking-tighter text-[var(--accent-primary)]">15</h1>
                 <p class="text-4xl font-bold tracking-tight text-[var(--text-primary)]">Puzzle</p>
             </header>
             
@@ -232,9 +231,9 @@
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Размер поля</h2>
             </header>
             <main class="flex-grow flex flex-col justify-center gap-4">
-                 <button data-size="4" class="classic-size-btn btn btn-pastel-1 w-full py-4 rounded-xl text-lg font-bold">4 x 4</button>
-                 <button data-size="5" class="classic-size-btn btn btn-pastel-2 w-full py-4 rounded-xl text-lg font-bold">5 x 5</button>
-                 <button data-size="6" class="classic-size-btn btn btn-pastel-3 w-full py-4 rounded-xl text-lg font-bold">6 x 6</button>
+                 <button data-size="4" class="classic-size-btn btn bg-classic-1 text-classic-1 w-full py-4 rounded-xl text-lg font-bold">4 x 4</button>
+                 <button data-size="5" class="classic-size-btn btn bg-classic-2 text-classic-2 w-full py-4 rounded-xl text-lg font-bold">5 x 5</button>
+                 <button data-size="6" class="classic-size-btn btn bg-classic-3 text-classic-3 w-full py-4 rounded-xl text-lg font-bold">6 x 6</button>
             </main>
         </div>
         
@@ -247,10 +246,10 @@
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Категории</h2>
             </header>
             <main class="flex-grow flex flex-col justify-center gap-4">
-                 <button data-category="animals" class="category-btn btn btn-pastel-1 w-full py-4 rounded-xl text-lg font-bold">Животные</button>
-                 <button data-category="nature" class="category-btn btn btn-pastel-2 w-full py-4 rounded-xl text-lg font-bold">Природа</button>
-                 <button data-category="cities" class="category-btn btn btn-pastel-3 w-full py-4 rounded-xl text-lg font-bold">Города</button>
-                 <button data-category="cars" class="category-btn btn btn-pastel-4 w-full py-4 rounded-xl text-lg font-bold">Автомобили</button>
+                 <button data-category="animals" class="category-btn btn bg-pastel-green text-pastel-green w-full py-4 rounded-xl text-lg font-bold">Животные</button>
+                 <button data-category="nature" class="category-btn btn bg-pastel-blue text-pastel-blue w-full py-4 rounded-xl text-lg font-bold">Природа</button>
+                 <button data-category="cities" class="category-btn btn bg-pastel-yellow text-pastel-yellow w-full py-4 rounded-xl text-lg font-bold">Города</button>
+                 <button data-category="cars" class="category-btn btn bg-pastel-red text-pastel-red w-full py-4 rounded-xl text-lg font-bold">Автомобили</button>
             </main>
         </div>
 
@@ -270,7 +269,7 @@
                         <div id="moves" class="text-xl font-bold">0</div>
                     </div>
                 </div>
-                <div id="image-preview-container" class="w-20 h-20 rounded-lg overflow-hidden shadow-md bg-[var(--bg-tertiary)]">
+                <div id="image-preview-container" class="w-24 h-24 rounded-lg overflow-hidden shadow-md bg-[var(--bg-tertiary)]">
                     <!-- Image preview will be inserted here -->
                 </div>
             </header>
@@ -285,7 +284,7 @@
                 <div class="flex items-center gap-4 bg-[var(--bg-tertiary)] py-2 px-4 rounded-full">
                     <span class="font-semibold text-sm text-[var(--text-secondary)]">Подсказка</span>
                      <button id="hint-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                        <span id="hint-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                        <span id="hint-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
                     </button>
                 </div>
             </footer>
@@ -296,7 +295,7 @@
             <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-4">Правила игры</h2>
                 <p class="text-[var(--text-secondary)] mb-4 text-center">
-                    Цель игры — упорядочить плитки по номерам или собрать картинку. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
+                    Цель игры — упорядочить плитки по номерам. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
                 </p>
                 <div id="rules-grid-example" class="aspect-square bg-[var(--bg-tertiary)] rounded-lg p-2 grid grid-cols-4 gap-1">
                     <!-- Mini grid will be generated here by JS -->
@@ -322,19 +321,19 @@
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Тёмная тема</span>
                         <button id="theme-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="theme-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                            <span id="theme-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
                         </button>
                     </div>
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Музыка</span>
                         <button id="music-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="music-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                            <span id="music-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
                         </button>
                     </div>
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Звуки</span>
                         <button id="sfx-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="sfx-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                            <span id="sfx-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
                         </button>
                     </div>
                 </div>
@@ -447,18 +446,21 @@
             const initAudio = () => {
                 if (sfxTap) return;
                 // New, softer tap sound
-                sfxTap = new Tone.Synth({
+                sfxTap = new Tone.MembraneSynth({
+                    pitchDecay: 0.01,
+                    octaves: 2,
                     oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 },
+                    envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.3 },
                     volume: -15
                 }).toDestination();
                 
                 sfxSlide = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.1 }, volume: -18 }).toDestination();
-                
-                // New, more melodic win sound
-                sfxWin = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "sine" },
-                    envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.4 },
+
+                // New, more pleasant win sound
+                sfxWin = new Tone.PolySynth(Tone.FMSynth, {
+                    harmonicity: 3.01,
+                    modulationIndex: 14,
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 },
                     volume: -10
                 }).toDestination();
             };
@@ -467,18 +469,22 @@
                 if (!state.sfxEnabled || !Tone.context.state === 'suspended') return;
                 initAudio();
                 const now = Tone.now();
-                if (sound === 'tap') sfxTap.triggerAttackRelease("C5", "32n", now);
+                if (sound === 'tap') sfxTap.triggerAttackRelease("C3", "8n", now);
                 if (sound === 'slide') sfxSlide.triggerAttackRelease("A5", "32n", now);
                 if (sound === 'win') {
-                    const notes = ["C5", "E5", "G5", "C6"];
-                    notes.forEach((note, i) => {
-                        sfxWin.triggerAttackRelease(note, "8n", now + i * 0.08);
-                    });
+                    // Pleasant arpeggio for win
+                    sfxWin.triggerAttackRelease("C5", "16n", now);
+                    sfxWin.triggerAttackRelease("E5", "16n", now + 0.08);
+                    sfxWin.triggerAttackRelease("G5", "16n", now + 0.16);
+                    sfxWin.triggerAttackRelease("C6", "16n", now + 0.24);
                 }
             };
 
             // --- Game Logic ---
             const initGame = (mode, options) => {
+                // BUG FIX: Clear the board HTML at the very start to prevent duplicated tiles
+                puzzleBoard.innerHTML = '';
+
                 state.gameMode = mode;
                 state.category = options.category || null;
                 state.currentLevel = options.level || 1;
@@ -492,11 +498,10 @@
                 generateBoard();
                 showScreen('game');
                 
-                // FIX: Use a small timeout to ensure the DOM is ready before rendering the board.
-                // This prevents the tile duplication bug.
-                setTimeout(() => {
+                // Use requestAnimationFrame to ensure the DOM is ready for board rendering
+                requestAnimationFrame(() => {
                     rerenderBoard(() => startGame());
-                }, 0);
+                });
             };
 
             const updateGameHeader = () => {
@@ -516,7 +521,7 @@
                 state.moves = 0;
                 state.timer = 0;
                 state.isPaused = false;
-                state.isGameActive = false; // Set to false until game actually starts
+                state.isGameActive = true;
                 movesEl.textContent = '0';
                 timerEl.textContent = '00:00';
                 clearInterval(state.timerInterval);
@@ -527,20 +532,16 @@
                 state.board = Array.from({ length: state.gridSize }, (_, row) => 
                     Array.from({ length: state.gridSize }, (_, col) => row * state.gridSize + col + 1)
                 );
-                // In a solvable 15-puzzle, the empty space is part of the permutation.
-                // For simplicity, we just mark the last tile's value as the 'empty' one.
-                state.board[state.gridSize-1][state.gridSize-1] = TILE_COUNT; 
+                // Correctly set the empty tile value
+                state.board[state.gridSize-1][state.gridSize-1] = TILE_COUNT;
                 state.emptyTile = { row: state.gridSize - 1, col: state.gridSize - 1 };
 
-                // Shuffle by performing random valid moves
                 let shuffleMoves = state.gridSize * state.gridSize * 10;
                 for (let i = 0; i < shuffleMoves; i++) {
                     const neighbors = getNeighbors(state.emptyTile.row, state.emptyTile.col);
                     const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-                    // Swap values in the logical board array
                     [state.board[state.emptyTile.row][state.emptyTile.col], state.board[randomNeighbor.row][randomNeighbor.col]] = 
                         [state.board[randomNeighbor.row][randomNeighbor.col], state.board[state.emptyTile.row][state.emptyTile.col]];
-                    // Update the logical position of the empty tile
                     state.emptyTile = randomNeighbor;
                 }
             };
@@ -601,7 +602,7 @@
 
                 const img = new Image();
                 img.onload = () => {
-                    const pieceSize = img.width / state.gridSize; // Image is already a square
+                    const pieceSize = img.width / state.gridSize; // Assuming image is already a square
                     for (let row = 0; row < state.gridSize; row++) {
                         for (let col = 0; col < state.gridSize; col++) {
                              const tileValue = state.board[row][col];
@@ -614,7 +615,6 @@
                                 canvas.width = pieceSize;
                                 canvas.height = pieceSize;
                                 const ctx = canvas.getContext('2d');
-                                // Calculate source position based on original (unshuffled) tile value
                                 const sX = ((tileValue - 1) % state.gridSize) * pieceSize;
                                 const sY = Math.floor((tileValue - 1) / state.gridSize) * pieceSize;
                                 ctx.drawImage(img, sX, sY, pieceSize, pieceSize, 0, 0, pieceSize, pieceSize);
@@ -628,7 +628,6 @@
                                     tile.appendChild(hint);
                                 }
                             }
-                            // Set position based on shuffled board
                             const { top, left } = getTilePosition(row, col, tileSize);
                             tile.style.width = `${tileSize}px`;
                             tile.style.height = `${tileSize}px`;
@@ -661,10 +660,8 @@
             };
 
             const swapTiles = (row1, col1, row2, col2) => {
-                // Update logical board
                 [state.board[row1][col1], state.board[row2][col2]] = [state.board[row2][col2], state.board[row1][col1]];
 
-                // Update visual board
                 const tile1 = puzzleBoard.querySelector(`[data-row='${row1}'][data-col='${col1}']`);
                 const tile2 = puzzleBoard.querySelector(`[data-row='${row2}'][data-col='${col2}']`);
                 
@@ -684,7 +681,7 @@
                 tile2.dataset.row = row1;
                 tile2.dataset.col = col1;
                 
-                state.emptyTile = { row: row1, col: col1 }; // The clicked tile's original position is now empty
+                state.emptyTile = { row: row1, col: col1 };
                 
                 updateMoves();
                 if (checkWin()) {
@@ -757,7 +754,7 @@
             const startTimer = () => {
                 clearInterval(state.timerInterval);
                 state.timerInterval = setInterval(() => {
-                    if (!state.isPaused && state.isGameActive) {
+                    if (!state.isPaused) {
                         state.timer++;
                         timerEl.textContent = formatTime(state.timer);
                     }
@@ -800,6 +797,7 @@
             });
 
             puzzleBoard.addEventListener('click', (event) => {
+                if (state.isPaused || !state.isGameActive) return;
                 const tile = event.target.closest('.tile');
                 if (tile && !tile.classList.contains('empty')) {
                     const row = parseInt(tile.dataset.row, 10);
@@ -850,15 +848,15 @@
                     reader.onload = (event) => {
                         const img = new Image();
                         img.onload = () => {
-                            // FIX: Crop image to a square from the center
+                            // Correct cropping logic
                             const size = Math.min(img.width, img.height);
                             const canvas = document.createElement('canvas');
                             canvas.width = size;
                             canvas.height = size;
                             const ctx = canvas.getContext('2d');
+                            // Calculate starting points to crop from the center
                             const x = (img.width - size) / 2;
                             const y = (img.height - size) / 2;
-                            // Draw the cropped section of the image onto the canvas
                             ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
                             initGame('image', { imageSrc: canvas.toDataURL(), size: 4 });
                         };
@@ -907,7 +905,6 @@
 
 
             const exitToMenu = () => {
-                endGame(false);
                 hideAllModals();
                 showScreen('mainMenu');
             };
@@ -918,8 +915,14 @@
             const setupToggle = (toggleEl, indicatorEl, initialValue, onToggle) => {
                 let isEnabled = initialValue;
                 const applyState = (enabled) => {
-                    // FIX: Correct translateX for the toggle switch
                     indicatorEl.style.transform = enabled ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
+                    if(enabled) {
+                        toggleEl.classList.add('bg-[var(--accent-primary)]');
+                        toggleEl.classList.remove('bg-[var(--bg-primary)]');
+                    } else {
+                        toggleEl.classList.remove('bg-[var(--accent-primary)]');
+                        toggleEl.classList.add('bg-[var(--bg-primary)]');
+                    }
                     onToggle(enabled);
                 };
                 applyState(isEnabled);
@@ -937,6 +940,7 @@
                 state[storageKey] = savedValue;
                 const updateUI = setupToggle(toggle, indicator, savedValue, (isEnabled) => {
                     localStorage.setItem(storageKey, isEnabled);
+                    state[storageKey] = isEnabled; // Update global state
                     onToggle(isEnabled);
                 });
                 return (val) => { state[storageKey] = val; updateUI(val); };
@@ -947,7 +951,7 @@
                  html.classList.toggle('dark', isDark);
                  html.classList.toggle('light', !isDark);
             });
-            setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
+            const updateMusicToggle = setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
                 if (isEnabled) {
                     bgMusic.play().catch(e=>console.log("Music autoplay blocked by browser"));
                 } else {
@@ -960,10 +964,18 @@
             const hintIndicator = document.getElementById('hint-toggle-indicator');
             setupToggle(hintToggle, hintIndicator, state.hintsEnabled, (isEnabled) => {
                 state.hintsEnabled = isEnabled;
-                if (state.isGameActive || state.gameMode === 'image') {
+                if (state.isGameActive && state.gameMode === 'image') {
                     rerenderBoard(() => {});
                 }
             });
+            
+            // Initial check for music state
+            if(state.musicEnabled) {
+                bgMusic.play().catch(e=>console.log("Music autoplay blocked by browser"));
+            } else {
+                bgMusic.pause();
+            }
+
 
             // --- Category Progress ---
             const getCategoryProgress = (category) => {
@@ -982,13 +994,12 @@
                 const statsKey = `classic-${state.gridSize}x${state.gridSize}`;
                 const stats = getClassicStats();
                 if (!stats[statsKey]) {
-                    stats[statsKey] = { bestTime: null, gamesPlayed: 0 };
+                    stats[statsKey] = { bestTime: null, bestMoves: null, wins: 0 };
                 }
                 const current = stats[statsKey];
-                if (current.bestTime === null || state.timer < current.bestTime) {
-                    current.bestTime = state.timer;
-                }
-                current.gamesPlayed++;
+                if (current.bestTime === null || state.timer < current.bestTime) current.bestTime = state.timer;
+                if (current.bestMoves === null || state.moves < current.bestMoves) current.bestMoves = state.moves;
+                current.wins++;
                 localStorage.setItem('puzzle-stats-classic', JSON.stringify(stats));
             };
             
@@ -1003,7 +1014,6 @@
                     'classic-6x6': '6x6',
                 };
                 
-                // FIX: Update stats table headers
                 let tableHTML = `
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -1012,18 +1022,20 @@
                                     <th scope="col" class="py-2 px-2">Размер</th>
                                     <th scope="col" class="py-2 px-2 text-center">Побед</th>
                                     <th scope="col" class="py-2 px-2 text-center">Лучшее время</th>
+                                    <th scope="col" class="py-2 px-2 text-center">Лучшие ходы</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
 
                 for (const key in modes) {
-                    const data = stats[key] || { gamesPlayed: 0, bestTime: null };
+                    const data = stats[key] || { wins: 0, bestTime: null, bestMoves: null };
                     tableHTML += `
                         <tr class="border-t border-[var(--bg-tertiary)]">
                             <td class="py-3 px-2 font-bold">${modes[key]}</td>
-                            <td class="py-3 px-2 text-center">${data.gamesPlayed}</td>
+                            <td class="py-3 px-2 text-center">${data.wins}</td>
                             <td class="py-3 px-2 text-center">${data.bestTime !== null ? formatTime(data.bestTime) : '-'}</td>
+                            <td class="py-3 px-2 text-center">${data.bestMoves !== null ? data.bestMoves : '-'}</td>
                         </tr>
                     `;
                 }
@@ -1041,13 +1053,16 @@
                     cell.textContent = i;
                     container.appendChild(cell);
                 }
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'rules-grid-cell rounded-md';
+                container.appendChild(emptyCell);
             };
             
             // --- Initialization ---
             generateRulesGrid();
 
             const resizeObserver = new ResizeObserver(() => {
-                if (state.currentScreen === 'game') {
+                if (state.currentScreen === 'game' && state.isGameActive) {
                     rerenderBoard(() => {});
                 }
             });
@@ -1057,4 +1072,6 @@
     </script>
 </body>
 </html>
+
+
 
