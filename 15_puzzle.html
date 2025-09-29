@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ru" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>15 Puzzle Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f3f4f6; /* gray-100 */
+            --bg-secondary: #ffffff; /* white */
+            --bg-tertiary: #e5e7eb; /* gray-200 */
+            --text-primary: #111827; /* gray-900 */
+            --text-secondary: #4b5563; /* gray-600 */
+            --accent-primary: #4f46e5; /* indigo-600 */
+            --accent-primary-hover: #4338ca; /* indigo-700 */
+            --tile-bg: #ffffff;
+            --tile-text: #4f46e5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --modal-backdrop: rgba(17, 24, 39, 0.5);
+        }
+
+        html.dark {
+            --bg-primary: #111827; /* gray-900 */
+            --bg-secondary: #1f2937; /* gray-800 */
+            --bg-tertiary: #374151; /* gray-700 */
+            --text-primary: #f9fafb; /* gray-50 */
+            --text-secondary: #d1d5db; /* gray-300 */
+            --accent-primary: #6366f1; /* indigo-500 */
+            --accent-primary-hover: #4f46e5; /* indigo-600 */
+            --tile-bg: #374151;
+            --tile-text: #c7d2fe;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --modal-backdrop: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Basic Setup */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Main Container for vertical mobile layout */
+        .game-container {
+            width: 100%;
+            max-width: 480px; /* Optimal width for mobile games */
+            height: 100vh;
+            height: -webkit-fill-available; /* iOS Safari fix */
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 40px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+
+        /* Screen Transitions */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s;
+            opacity: 1;
+            transform: scale(1);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            overflow-y: auto;
+        }
+
+        .screen.hidden {
+            transform: scale(1.1);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Glassmorphism Modal */
+        .modal {
+            background-color: var(--modal-backdrop);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .modal-content {
+            background-color: var(--bg-secondary);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        
+        .modal:not(.hidden) .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Custom Button Styles */
+        .btn {
+            transition: transform 0.1s ease-out, background-color 0.2s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-primary-hover);
+        }
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Puzzle Board */
+        #puzzle-board {
+            aspect-ratio: 1 / 1;
+            padding: 8px; /* Dynamic padding */
+            background-color: var(--bg-tertiary);
+            border-radius: 16px; /* Dynamic radius */
+            touch-action: none; /* Prevent scrolling on board */
+            position: relative;
+        }
+
+        .tile {
+            background-color: var(--tile-bg);
+            color: var(--tile-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* font-size is set dynamically in JS */
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            user-select: none;
+            position: absolute;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            transition: top 0.2s cubic-bezier(0.25, 1, 0.5, 1), left 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: top, left;
+        }
+        .tile.empty {
+            background-color: transparent;
+            box-shadow: none;
+            pointer-events: none;
+        }
+        .tile canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+        .tile .hint-number {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-weight: bold;
+            color: white;
+            -webkit-text-stroke: 1px black;
+            text-stroke: 1px black;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        
+        .rules-grid-cell {
+            font-size: 1rem; /* Larger font size for rules */
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+    <audio id="bg-music" src="music.mp3" loop></audio>
+
+    <div id="game-container" class="game-container">
+
+        <!-- ===== Main Menu Screen ===== -->
+        <div id="main-menu" class="screen flex flex-col justify-between p-8">
+            <header class="text-center">
+                <h1 class="text-5xl font-extrabold tracking-tighter text-[var(--accent-primary)]">15</h1>
+                <p class="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Puzzle</p>
+            </header>
+            
+            <main class="flex-grow flex flex-col justify-center gap-4 my-8">
+                <button data-mode="classic" class="game-mode-btn btn btn-primary w-full py-4 rounded-xl text-lg font-bold">Классика</button>
+                <button data-mode="category" class="game-mode-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Категории</button>
+                <button id="custom-photo-btn" class="btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Своё фото</button>
+                <input type="file" id="image-loader" class="hidden" accept="image/*">
+            </main>
+
+            <footer class="flex justify-center gap-4">
+                <button id="rules-btn" class="btn btn-secondary p-5 aspect-square rounded-xl flex justify-center items-center">
+                    <svg class="w-8 h-8 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+                <button id="stats-btn" class="btn btn-secondary p-5 aspect-square rounded-xl flex justify-center items-center">
+                    <svg class="w-8 h-8 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </button>
+                <button id="settings-btn" class="btn btn-secondary p-5 aspect-square rounded-xl flex justify-center items-center">
+                    <svg class="w-8 h-8 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+            </footer>
+        </div>
+
+        <!-- ===== Classic Mode Size Selection Screen ===== -->
+        <div id="classic-menu" class="screen hidden flex flex-col p-8">
+            <header class="flex items-center mb-8">
+                <button id="back-to-main-from-classic" class="btn btn-secondary p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Размер поля</h2>
+            </header>
+            <main class="flex-grow flex flex-col justify-center gap-4">
+                 <button data-size="4" class="classic-size-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">4 x 4</button>
+                 <button data-size="5" class="classic-size-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">5 x 5</button>
+                 <button data-size="6" class="classic-size-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">6 x 6</button>
+            </main>
+        </div>
+        
+        <!-- ===== Category Selection Screen ===== -->
+        <div id="category-menu" class="screen hidden flex flex-col p-8">
+            <header class="flex items-center mb-8">
+                <button id="back-to-main-from-cat" class="btn btn-secondary p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Категории</h2>
+            </header>
+            <main class="flex-grow flex flex-col justify-center gap-4">
+                 <button data-category="animals" class="category-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Животные</button>
+                 <button data-category="nature" class="category-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Природа</button>
+                 <button data-category="cities" class="category-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Города</button>
+                 <button data-category="cars" class="category-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Автомобили</button>
+            </main>
+        </div>
+
+        <!-- ===== Game Screen ===== -->
+        <div id="game-screen" class="screen hidden flex flex-col justify-between p-4 sm:p-6">
+            <header class="flex justify-between items-center w-full mb-4">
+                <button id="pause-btn" class="btn btn-secondary p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+                <div class="flex gap-6 text-center">
+                    <div>
+                        <div class="text-sm font-medium text-[var(--text-secondary)]">Время</div>
+                        <div id="timer" class="text-xl font-bold">00:00</div>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-[var(--text-secondary)]">Ходы</div>
+                        <div id="moves" class="text-xl font-bold">0</div>
+                    </div>
+                </div>
+                <div id="image-preview-container" class="w-16 h-16 rounded-lg overflow-hidden shadow-md bg-[var(--bg-tertiary)]">
+                    <!-- Image preview will be inserted here -->
+                </div>
+            </header>
+            
+            <main class="flex-grow flex items-center justify-center">
+                <div id="puzzle-board-container" class="w-full max-w-md mx-auto">
+                    <div id="puzzle-board"></div>
+                </div>
+            </main>
+
+            <footer id="game-footer" class="h-16 flex items-center justify-center opacity-0 transition-opacity duration-300">
+                <div class="flex items-center gap-4 bg-[var(--bg-tertiary)] py-2 px-4 rounded-full">
+                    <span class="font-semibold text-sm text-[var(--text-secondary)]">Подсказка</span>
+                     <button id="hint-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
+                        <span id="hint-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                    </button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ===== Modals ===== -->
+        <div id="rules-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold text-center mb-4">Правила игры</h2>
+                <p class="text-[var(--text-secondary)] mb-4 text-center">
+                    Цель игры — упорядочить плитки по номерам. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
+                </p>
+                <div id="rules-grid-example" class="aspect-square bg-[var(--bg-tertiary)] rounded-lg p-2 grid grid-cols-4 gap-1">
+                    <!-- Mini grid will be generated here by JS -->
+                </div>
+                <button id="close-rules-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Понятно</button>
+            </div>
+        </div>
+
+        <div id="stats-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold text-center mb-4">Статистика (Классика)</h2>
+                <div id="stats-container" class="space-y-4">
+                     <!-- Stats will be rendered here -->
+                </div>
+                <button id="close-stats-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Закрыть</button>
+            </div>
+        </div>
+
+        <div id="settings-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold text-center mb-6">Настройки</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
+                        <span class="font-medium">Тёмная тема</span>
+                        <button id="theme-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
+                            <span id="theme-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
+                        <span class="font-medium">Музыка</span>
+                        <button id="music-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
+                            <span id="music-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
+                        <span class="font-medium">Звуки</span>
+                        <button id="sfx-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
+                            <span id="sfx-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1"></span>
+                        </button>
+                    </div>
+                </div>
+                <button id="close-settings-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Готово</button>
+            </div>
+        </div>
+
+        <div id="pause-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-8 rounded-2xl shadow-lg text-center">
+                <h2 class="text-3xl font-bold mb-6">Пауза</h2>
+                <div class="space-y-4">
+                     <button id="resume-game-btn" class="btn btn-primary w-full py-3 rounded-lg font-semibold">Продолжить</button>
+                     <button id="restart-game-btn-pause" class="btn btn-secondary w-full py-3 rounded-lg font-semibold">Начать заново</button>
+                     <button id="exit-to-menu-btn-pause" class="btn btn-secondary w-full py-3 rounded-lg font-semibold">Выйти в меню</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="win-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-8 rounded-2xl shadow-lg text-center">
+                <div class="mb-4">
+                    <span class="text-6xl">🎉</span>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">Победа!</h2>
+                <p id="win-subtitle" class="text-[var(--text-secondary)] mb-6">Отличная работа!</p>
+                <div class="flex justify-around bg-[var(--bg-tertiary)] p-4 rounded-lg mb-6">
+                    <div class="text-center">
+                        <div class="text-sm font-medium text-[var(--text-secondary)]">Время</div>
+                        <div id="win-time" class="text-xl font-bold">00:00</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm font-medium text-[var(--text-secondary)]">Ходы</div>
+                        <div id="win-moves" class="text-xl font-bold">0</div>
+                    </div>
+                </div>
+                 <div class="space-y-4">
+                     <button id="next-level-btn-win" class="btn btn-primary w-full py-3 rounded-lg font-semibold">Следующий уровень</button>
+                     <button id="restart-game-btn-win" class="btn btn-primary w-full py-3 rounded-lg font-semibold">Играть снова</button>
+                     <button id="exit-to-menu-btn-win" class="btn btn-secondary w-full py-3 rounded-lg font-semibold">Выйти в меню</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="alert-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg text-center">
+                 <h2 id="alert-title" class="text-2xl font-bold mb-4">Поздравляем!</h2>
+                 <p id="alert-text" class="text-[var(--text-secondary)] mb-6">Вы прошли все уровни в этой категории. Новые уровни скоро появятся!</p>
+                 <button id="close-alert-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Отлично</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const screens = {
+                mainMenu: document.getElementById('main-menu'),
+                classicMenu: document.getElementById('classic-menu'),
+                categoryMenu: document.getElementById('category-menu'),
+                game: document.getElementById('game-screen'),
+            };
+            const modals = {
+                rules: document.getElementById('rules-modal'),
+                stats: document.getElementById('stats-modal'),
+                settings: document.getElementById('settings-modal'),
+                pause: document.getElementById('pause-modal'),
+                win: document.getElementById('win-modal'),
+                alert: document.getElementById('alert-modal'),
+            };
+            const puzzleBoard = document.getElementById('puzzle-board');
+            const timerEl = document.getElementById('timer');
+            const movesEl = document.getElementById('moves');
+            const imageLoader = document.getElementById('image-loader');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const gameFooter = document.getElementById('game-footer');
+            const bgMusic = document.getElementById('bg-music');
+
+            // --- Game State ---
+            let state = {
+                currentScreen: 'mainMenu',
+                gameMode: null, // 'classic', 'image'
+                category: null,
+                currentLevel: 1,
+                gridSize: 4,
+                customImageSrc: null,
+                board: [],
+                emptyTile: { row: 3, col: 3 },
+                moves: 0,
+                timer: 0,
+                timerInterval: null,
+                isPaused: false,
+                isGameActive: false,
+                sfxEnabled: true,
+                musicEnabled: true,
+                hintsEnabled: false,
+            };
+
+            const CATEGORIES_DATA = {
+                animals: { name: 'Животные', path: 'images/animals/' },
+                nature: { name: 'Природа', path: 'images/nature/' },
+                cities: { name: 'Города', path: 'images/cities/' },
+                cars: { name: 'Автомобили', path: 'images/cars/' }
+            };
+
+            const BOARD_PADDING = 8;
+            const TILE_GAP = 8;
+
+            // --- Sound Engine ---
+            let sfxTap, sfxSlide, sfxWin;
+            const initAudio = () => {
+                if (sfxTap) return;
+                sfxTap = new Tone.MembraneSynth({ octaves: 4, pitchDecay: 0.1, volume: -12 }).toDestination();
+                sfxSlide = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.1 }, volume: -18 }).toDestination();
+                sfxWin = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fatsawtooth" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }, volume: -12 }).toDestination();
+            };
+            
+            const playSound = (sound) => {
+                if (!state.sfxEnabled || !Tone.context.state === 'suspended') return;
+                initAudio();
+                const now = Tone.now();
+                if (sound === 'tap') sfxTap.triggerAttackRelease("C4", "8n", now);
+                if (sound === 'slide') sfxSlide.triggerAttackRelease("A5", "32n", now);
+                if (sound === 'win') sfxWin.triggerAttackRelease(["C5", "E5", "G5", "C6"], "16n", now);
+            };
+
+            // --- Game Logic ---
+            const initGame = (mode, options) => {
+                state.gameMode = mode;
+                state.category = options.category || null;
+                state.currentLevel = options.level || 1;
+                state.customImageSrc = options.imageSrc || null;
+                state.gridSize = options.size || 4;
+                
+                gameFooter.classList.toggle('opacity-0', mode !== 'image');
+                
+                updateGameHeader();
+                resetGameState();
+                generateBoard();
+                showScreen('game');
+                
+                requestAnimationFrame(() => {
+                    rerenderBoard(() => startGame());
+                });
+            };
+
+            const updateGameHeader = () => {
+                imagePreviewContainer.innerHTML = '';
+                if (state.gameMode === 'image' && state.customImageSrc) {
+                    const img = document.createElement('img');
+                    img.src = state.customImageSrc;
+                    img.className = 'w-full h-full object-cover';
+                    imagePreviewContainer.appendChild(img);
+                    imagePreviewContainer.classList.remove('hidden');
+                } else {
+                    imagePreviewContainer.classList.add('hidden');
+                }
+            };
+
+            const resetGameState = () => {
+                state.moves = 0;
+                state.timer = 0;
+                state.isPaused = false;
+                state.isGameActive = true;
+                movesEl.textContent = '0';
+                timerEl.textContent = '00:00';
+                clearInterval(state.timerInterval);
+            };
+
+            const generateBoard = () => {
+                const TILE_COUNT = state.gridSize * state.gridSize;
+                state.board = Array.from({ length: state.gridSize }, (_, row) => 
+                    Array.from({ length: state.gridSize }, (_, col) => row * state.gridSize + col + 1)
+                );
+                state.board[state.gridSize-1][state.gridSize-1] = TILE_COUNT;
+                state.emptyTile = { row: state.gridSize - 1, col: state.gridSize - 1 };
+
+                let shuffleMoves = state.gridSize * state.gridSize * 10;
+                for (let i = 0; i < shuffleMoves; i++) {
+                    const neighbors = getNeighbors(state.emptyTile.row, state.emptyTile.col);
+                    const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    [state.board[state.emptyTile.row][state.emptyTile.col], state.board[randomNeighbor.row][randomNeighbor.col]] = 
+                        [state.board[randomNeighbor.row][randomNeighbor.col], state.board[state.emptyTile.row][state.emptyTile.col]];
+                    state.emptyTile = randomNeighbor;
+                }
+            };
+            
+            const rerenderBoard = (callback) => {
+                if (state.gameMode === 'image' && state.customImageSrc) renderImageBoard(callback);
+                else {
+                    renderClassicBoard();
+                    if (callback) callback();
+                }
+            }
+
+            const getTileMetrics = () => {
+                const boardSize = puzzleBoard.clientWidth - (BOARD_PADDING * 2);
+                const tileSize = (boardSize - (TILE_GAP * (state.gridSize - 1))) / state.gridSize;
+                return { tileSize };
+            };
+
+            const getTilePosition = (row, col, tileSize) => {
+                const top = BOARD_PADDING + row * (tileSize + TILE_GAP);
+                const left = BOARD_PADDING + col * (tileSize + TILE_GAP);
+                return { top, left };
+            };
+            
+            const renderClassicBoard = () => {
+                puzzleBoard.innerHTML = '';
+                const { tileSize } = getTileMetrics();
+                const TILE_COUNT = state.gridSize * state.gridSize;
+
+                for (let row = 0; row < state.gridSize; row++) {
+                    for (let col = 0; col < state.gridSize; col++) {
+                        const tileValue = state.board[row][col];
+                        const tile = document.createElement('div');
+                        tile.classList.add('tile');
+                        if (tileValue === TILE_COUNT) {
+                            tile.classList.add('empty');
+                        } else {
+                            tile.textContent = tileValue;
+                        }
+                        tile.style.fontSize = `${tileSize * 0.4}px`;
+                        const { top, left } = getTilePosition(row, col, tileSize);
+                        tile.style.width = `${tileSize}px`;
+                        tile.style.height = `${tileSize}px`;
+                        tile.style.top = `${top}px`;
+                        tile.style.left = `${left}px`;
+                        tile.dataset.row = row;
+                        tile.dataset.col = col;
+                        puzzleBoard.appendChild(tile);
+                    }
+                }
+            };
+
+            const renderImageBoard = (callback) => {
+                puzzleBoard.innerHTML = '';
+                const { tileSize } = getTileMetrics();
+                const TILE_COUNT = state.gridSize * state.gridSize;
+
+                const img = new Image();
+                img.onload = () => {
+                    const pieceSize = img.width / state.gridSize;
+                    for (let row = 0; row < state.gridSize; row++) {
+                        for (let col = 0; col < state.gridSize; col++) {
+                             const tileValue = state.board[row][col];
+                             const tile = document.createElement('div');
+                             tile.classList.add('tile');
+                            if (tileValue === TILE_COUNT) {
+                                tile.classList.add('empty');
+                            } else {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = pieceSize;
+                                canvas.height = pieceSize;
+                                const ctx = canvas.getContext('2d');
+                                const sX = ((tileValue - 1) % state.gridSize) * pieceSize;
+                                const sY = Math.floor((tileValue - 1) / state.gridSize) * pieceSize;
+                                ctx.drawImage(img, sX, sY, pieceSize, pieceSize, 0, 0, pieceSize, pieceSize);
+                                tile.appendChild(canvas);
+
+                                if (state.hintsEnabled) {
+                                    const hint = document.createElement('span');
+                                    hint.className = 'hint-number';
+                                    hint.textContent = tileValue;
+                                    hint.style.fontSize = `${tileSize * 0.2}px`;
+                                    tile.appendChild(hint);
+                                }
+                            }
+                            const { top, left } = getTilePosition(row, col, tileSize);
+                            tile.style.width = `${tileSize}px`;
+                            tile.style.height = `${tileSize}px`;
+                            tile.style.top = `${top}px`;
+                            tile.style.left = `${left}px`;
+                            tile.dataset.row = row;
+                            tile.dataset.col = col;
+                            tile.dataset.value = tileValue;
+                            puzzleBoard.appendChild(tile);
+                        }
+                    }
+                    if(callback) callback();
+                };
+                img.onerror = () => {
+                    alert("Ошибка: не удалось загрузить изображение. Убедитесь, что файлы лежат в правильной папке.");
+                    showScreen('mainMenu');
+                }
+                img.src = state.customImageSrc;
+            };
+
+            const onTileClick = (row, col) => {
+                if (state.isPaused || !state.isGameActive) return;
+                const { emptyTile } = state;
+                const isAdjacent = Math.abs(row - emptyTile.row) + Math.abs(col - emptyTile.col) === 1;
+
+                if (isAdjacent) {
+                    playSound('slide');
+                    swapTiles(row, col, emptyTile.row, emptyTile.col);
+                }
+            };
+
+            const swapTiles = (row1, col1, row2, col2) => {
+                [state.board[row1][col1], state.board[row2][col2]] = [state.board[row2][col2], state.board[row1][col1]];
+
+                const tile1 = puzzleBoard.querySelector(`[data-row='${row1}'][data-col='${col1}']`);
+                const tile2 = puzzleBoard.querySelector(`[data-row='${row2}'][data-col='${col2}']`);
+                
+                if (!tile1 || !tile2) return;
+
+                const { tileSize } = getTileMetrics();
+                const pos1 = getTilePosition(row1, col1, tileSize);
+                const pos2 = getTilePosition(row2, col2, tileSize);
+                
+                tile1.style.top = `${pos2.top}px`;
+                tile1.style.left = `${pos2.left}px`;
+                tile1.dataset.row = row2;
+                tile1.dataset.col = col2;
+                
+                tile2.style.top = `${pos1.top}px`;
+                tile2.style.left = `${pos1.left}px`;
+                tile2.dataset.row = row1;
+                tile2.dataset.col = col1;
+                
+                state.emptyTile = { row: row1, col: col1 };
+                
+                updateMoves();
+                if (checkWin()) {
+                    endGame(true);
+                }
+            };
+
+            const getNeighbors = (row, col) => {
+                const neighbors = [];
+                if (row > 0) neighbors.push({ row: row - 1, col });
+                if (row < state.gridSize - 1) neighbors.push({ row: row + 1, col });
+                if (col > 0) neighbors.push({ row, col: col - 1 });
+                if (col < state.gridSize - 1) neighbors.push({ row, col: col + 1 });
+                return neighbors;
+            };
+            
+            const updateMoves = () => {
+                state.moves++;
+                movesEl.textContent = state.moves;
+            };
+
+            const checkWin = () => {
+                let expectedValue = 1;
+                const TILE_COUNT = state.gridSize * state.gridSize;
+                for (let r = 0; r < state.gridSize; r++) {
+                    for (let c = 0; c < state.gridSize; c++) {
+                        const value = state.board[r][c];
+                        if (r === state.gridSize - 1 && c === state.gridSize - 1) {
+                           if (value !== TILE_COUNT) return false;
+                        } else {
+                           if (value !== expectedValue) return false;
+                        }
+                        expectedValue++;
+                    }
+                }
+                return true;
+            };
+            
+            const startGame = () => {
+                state.isGameActive = true;
+                startTimer();
+            };
+
+            const endGame = (isWin) => {
+                state.isGameActive = false;
+                clearInterval(state.timerInterval);
+                if (isWin) {
+                    playSound('win');
+                    document.getElementById('win-time').textContent = formatTime(state.timer);
+                    document.getElementById('win-moves').textContent = state.moves;
+                    
+                    const isCategoryMode = state.gameMode === 'image' && state.category;
+                    document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
+                    document.getElementById('restart-game-btn-win').classList.toggle('hidden', isCategoryMode);
+                    
+                    if (isCategoryMode) {
+                        document.getElementById('win-subtitle').textContent = `Уровень ${state.currentLevel} пройден!`;
+                        saveCategoryProgress(state.category, state.currentLevel + 1);
+                    } else {
+                        document.getElementById('win-subtitle').textContent = `Отличная работа!`;
+                    }
+
+                    if (state.gameMode === 'classic') {
+                        saveClassicStats();
+                    }
+                    showModal('win');
+                }
+            };
+
+            const startTimer = () => {
+                clearInterval(state.timerInterval);
+                state.timerInterval = setInterval(() => {
+                    if (!state.isPaused) {
+                        state.timer++;
+                        timerEl.textContent = formatTime(state.timer);
+                    }
+                }, 1000);
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                return `${mins}:${secs}`;
+            };
+            
+            const showScreen = (screenName) => {
+                Object.values(screens).forEach(s => s.classList.add('hidden'));
+                screens[screenName].classList.remove('hidden');
+                state.currentScreen = screenName;
+            };
+
+            const showAlert = (title, text) => {
+                document.getElementById('alert-title').textContent = title;
+                document.getElementById('alert-text').textContent = text;
+                showModal('alert');
+            }
+
+            const showModal = (modalName) => modals[modalName].classList.remove('hidden');
+            const hideModal = (modalName) => modals[modalName].classList.add('hidden');
+            const hideAllModals = () => Object.values(modals).forEach(m => m.classList.add('hidden'));
+
+            const handleFirstInteraction = () => {
+                Tone.start();
+                document.body.removeEventListener('click', handleFirstInteraction);
+                document.body.removeEventListener('touchend', handleFirstInteraction);
+            };
+            document.body.addEventListener('click', handleFirstInteraction, { once: true });
+            document.body.addEventListener('touchend', handleFirstInteraction, { once: true });
+
+            // --- Event Listeners ---
+            document.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => playSound('tap'));
+            });
+
+            puzzleBoard.addEventListener('click', (event) => {
+                if (state.isPaused || !state.isGameActive) return;
+                const tile = event.target.closest('.tile');
+                if (tile && !tile.classList.contains('empty')) {
+                    const row = parseInt(tile.dataset.row, 10);
+                    const col = parseInt(tile.dataset.col, 10);
+                    onTileClick(row, col);
+                }
+            });
+
+            document.querySelectorAll('.game-mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const mode = btn.dataset.mode;
+                    if (mode === 'classic') showScreen('classicMenu');
+                    else if (mode === 'category') showScreen('categoryMenu');
+                });
+            });
+
+            document.querySelectorAll('.classic-size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const size = parseInt(btn.dataset.size, 10);
+                    initGame('classic', { size });
+                });
+            });
+
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const category = btn.dataset.category;
+                    const level = getCategoryProgress(category);
+                    
+                    if (level > 60) {
+                        showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[category].name}". Новые уровни скоро появятся!`);
+                        return;
+                    }
+
+                    let size;
+                    if (level <= 20) size = 4;
+                    else if (level <= 40) size = 5;
+                    else size = 6;
+                    
+                    const imageSrc = `${CATEGORIES_DATA[category].path}${level}.jpg`;
+                    initGame('image', { category, imageSrc, size, level });
+                });
+            });
+            
+            document.getElementById('custom-photo-btn').addEventListener('click', () => imageLoader.click());
+            imageLoader.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const size = Math.min(img.width, img.height);
+                            const canvas = document.createElement('canvas');
+                            canvas.width = size; canvas.height = size;
+                            const ctx = canvas.getContext('2d');
+                            const x = (img.width - size) / 2;
+                            const y = (img.height - size) / 2;
+                            ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+                            initGame('image', { imageSrc: canvas.toDataURL(), size: 4 });
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+            
+            document.getElementById('back-to-main-from-cat').addEventListener('click', () => showScreen('mainMenu'));
+            document.getElementById('back-to-main-from-classic').addEventListener('click', () => showScreen('mainMenu'));
+            
+            document.getElementById('rules-btn').addEventListener('click', () => showModal('rules'));
+            document.getElementById('close-rules-btn').addEventListener('click', () => hideModal('rules'));
+            document.getElementById('stats-btn').addEventListener('click', () => { renderStats(); showModal('stats'); });
+            document.getElementById('close-stats-btn').addEventListener('click', () => hideModal('stats'));
+            document.getElementById('settings-btn').addEventListener('click', () => showModal('settings'));
+            document.getElementById('close-settings-btn').addEventListener('click', () => hideModal('settings'));
+            document.getElementById('close-alert-btn').addEventListener('click', () => hideModal('alert'));
+            
+            document.getElementById('pause-btn').addEventListener('click', () => { state.isPaused = true; showModal('pause'); });
+            document.getElementById('resume-game-btn').addEventListener('click', () => { state.isPaused = false; hideModal('pause'); });
+            
+            const restartGame = () => {
+                hideAllModals();
+                const options = { size: state.gridSize, category: state.category, level: state.currentLevel, imageSrc: state.customImageSrc };
+                initGame(state.gameMode, options);
+            };
+            document.getElementById('restart-game-btn-pause').addEventListener('click', restartGame);
+            document.getElementById('restart-game-btn-win').addEventListener('click', restartGame);
+            document.getElementById('next-level-btn-win').addEventListener('click', () => {
+                hideAllModals();
+                const nextLevel = state.currentLevel + 1;
+                if (nextLevel > 60) {
+                     showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[state.category].name}". Новые уровни скоро появятся!`);
+                     showScreen('mainMenu');
+                     return;
+                }
+                let size;
+                if (nextLevel <= 20) size = 4;
+                else if (nextLevel <= 40) size = 5;
+                else size = 6;
+                const imageSrc = `${CATEGORIES_DATA[state.category].path}${nextLevel}.jpg`;
+                initGame('image', { category: state.category, imageSrc, size, level: nextLevel });
+            });
+
+
+            const exitToMenu = () => {
+                hideAllModals();
+                showScreen('mainMenu');
+            };
+            document.getElementById('exit-to-menu-btn-pause').addEventListener('click', exitToMenu);
+            document.getElementById('exit-to-menu-btn-win').addEventListener('click', exitToMenu);
+            
+            // --- Settings & Hint Toggles ---
+            const setupToggle = (toggleEl, indicatorEl, initialValue, onToggle) => {
+                let isEnabled = initialValue;
+                const applyState = (enabled) => {
+                    indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0.25rem)';
+                    onToggle(enabled);
+                };
+                applyState(isEnabled);
+                toggleEl.addEventListener('click', () => {
+                    isEnabled = !isEnabled;
+                    applyState(isEnabled);
+                });
+                return applyState;
+            };
+            
+            const setupPersistentToggle = (toggleId, indicatorId, storageKey, onToggle) => {
+                const toggle = document.getElementById(toggleId);
+                const indicator = document.getElementById(indicatorId);
+                const savedValue = localStorage.getItem(storageKey) !== 'false';
+                state[storageKey] = savedValue;
+                const updateUI = setupToggle(toggle, indicator, savedValue, (isEnabled) => {
+                    localStorage.setItem(storageKey, isEnabled);
+                    onToggle(isEnabled);
+                });
+                return (val) => { state[storageKey] = val; updateUI(val); };
+            };
+
+            const html = document.documentElement;
+            setupPersistentToggle('theme-toggle', 'theme-toggle-indicator', 'theme', (isDark) => {
+                 html.classList.toggle('dark', isDark);
+                 html.classList.toggle('light', !isDark);
+            });
+            setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
+                if (isEnabled) {
+                    bgMusic.play().catch(e=>console.log("Music autoplay blocked by browser"));
+                } else {
+                    bgMusic.pause();
+                }
+            });
+            setupPersistentToggle('sfx-toggle', 'sfx-toggle-indicator', 'sfxEnabled', (isEnabled) => {});
+
+            const hintToggle = document.getElementById('hint-toggle');
+            const hintIndicator = document.getElementById('hint-toggle-indicator');
+            setupToggle(hintToggle, hintIndicator, state.hintsEnabled, (isEnabled) => {
+                state.hintsEnabled = isEnabled;
+                if (state.isGameActive) {
+                    rerenderBoard();
+                }
+            });
+
+            // --- Category Progress ---
+            const getCategoryProgress = (category) => {
+                const progress = JSON.parse(localStorage.getItem('puzzle-progress')) || {};
+                return progress[category] || 1;
+            };
+            const saveCategoryProgress = (category, level) => {
+                const progress = JSON.parse(localStorage.getItem('puzzle-progress')) || {};
+                progress[category] = level;
+                localStorage.setItem('puzzle-progress', JSON.stringify(progress));
+            };
+
+            // --- Statistics ---
+            const getClassicStats = () => JSON.parse(localStorage.getItem('puzzle-stats-classic')) || {};
+            const saveClassicStats = () => {
+                const statsKey = `classic-${state.gridSize}x${state.gridSize}`;
+                const stats = getClassicStats();
+                if (!stats[statsKey]) {
+                    stats[statsKey] = { bestTime: null, bestMoves: null, gamesPlayed: 0 };
+                }
+                const current = stats[statsKey];
+                if (current.bestTime === null || state.timer < current.bestTime) current.bestTime = state.timer;
+                if (current.bestMoves === null || state.moves < current.bestMoves) current.bestMoves = state.moves;
+                current.gamesPlayed++;
+                localStorage.setItem('puzzle-stats-classic', JSON.stringify(stats));
+            };
+            
+            const renderStats = () => {
+                const stats = getClassicStats();
+                const container = document.getElementById('stats-container');
+                container.innerHTML = '';
+                
+                const modes = { 
+                    'classic-4x4': '4x4',
+                    'classic-5x5': '5x5',
+                    'classic-6x6': '6x6',
+                };
+                
+                let tableHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-xs text-[var(--text-secondary)] uppercase">
+                                <tr>
+                                    <th scope="col" class="py-2 px-2">Размер</th>
+                                    <th scope="col" class="py-2 px-2 text-center">Игр</th>
+                                    <th scope="col" class="py-2 px-2 text-center">Время</th>
+                                    <th scope="col" class="py-2 px-2 text-center">Ходы</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                for (const key in modes) {
+                    const data = stats[key] || { gamesPlayed: 0, bestTime: null, bestMoves: null };
+                    tableHTML += `
+                        <tr class="border-t border-[var(--bg-tertiary)]">
+                            <td class="py-3 px-2 font-bold">${modes[key]}</td>
+                            <td class="py-3 px-2 text-center">${data.gamesPlayed}</td>
+                            <td class="py-3 px-2 text-center">${data.bestTime !== null ? formatTime(data.bestTime) : '-'}</td>
+                            <td class="py-3 px-2 text-center">${data.bestMoves !== null ? data.bestMoves : '-'}</td>
+                        </tr>
+                    `;
+                }
+
+                tableHTML += `</tbody></table></div>`;
+                container.innerHTML = tableHTML;
+            };
+
+            const generateRulesGrid = () => {
+                const container = document.getElementById('rules-grid-example');
+                container.innerHTML = '';
+                for (let i = 1; i <= 15; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'rules-grid-cell bg-[var(--bg-secondary)] rounded-md flex items-center justify-center font-bold text-[var(--accent-primary)]';
+                    cell.textContent = i;
+                    container.appendChild(cell);
+                }
+            };
+            
+            // --- Initialization ---
+            generateRulesGrid();
+
+            const resizeObserver = new ResizeObserver(() => {
+                if (state.currentScreen === 'game' && state.isGameActive) {
+                    rerenderBoard(() => {});
+                }
+            });
+            resizeObserver.observe(document.getElementById('puzzle-board-container'));
+
+        });
+    </script>
+</body>
+</html>
+
+
