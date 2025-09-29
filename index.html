@@ -198,8 +198,8 @@
         <!-- ===== Main Menu Screen ===== -->
         <div id="main-menu" class="screen flex flex-col justify-between p-8">
             <header class="text-center">
-                <h1 class="text-7xl font-extrabold tracking-tighter text-[var(--accent-primary)]">15</h1>
-                <p class="text-4xl font-bold tracking-tight text-[var(--text-primary)]">Puzzle</p>
+                <h1 class="text-8xl font-extrabold tracking-tighter text-[var(--accent-primary)]">15</h1>
+                <p class="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Puzzle</p>
             </header>
             
             <main class="flex-grow flex flex-col justify-center gap-4 my-8">
@@ -231,9 +231,9 @@
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Размер поля</h2>
             </header>
             <main class="flex-grow flex flex-col justify-center gap-4">
-                 <button data-size="4" class="classic-size-btn btn bg-classic-1 text-classic-1 w-full py-4 rounded-xl text-lg font-bold">4 x 4</button>
-                 <button data-size="5" class="classic-size-btn btn bg-classic-2 text-classic-2 w-full py-4 rounded-xl text-lg font-bold">5 x 5</button>
-                 <button data-size="6" class="classic-size-btn btn bg-classic-3 text-classic-3 w-full py-4 rounded-xl text-lg font-bold">6 x 6</button>
+                 <button data-size="4" class="classic-size-btn btn bg-classic-1 text-classic-1 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">4 x 4</button>
+                 <button data-size="5" class="classic-size-btn btn bg-classic-2 text-classic-2 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">5 x 5</button>
+                 <button data-size="6" class="classic-size-btn btn bg-classic-3 text-classic-3 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">6 x 6</button>
             </main>
         </div>
         
@@ -246,10 +246,10 @@
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Категории</h2>
             </header>
             <main class="flex-grow flex flex-col justify-center gap-4">
-                 <button data-category="animals" class="category-btn btn bg-pastel-green text-pastel-green w-full py-4 rounded-xl text-lg font-bold">Животные</button>
-                 <button data-category="nature" class="category-btn btn bg-pastel-blue text-pastel-blue w-full py-4 rounded-xl text-lg font-bold">Природа</button>
-                 <button data-category="cities" class="category-btn btn bg-pastel-yellow text-pastel-yellow w-full py-4 rounded-xl text-lg font-bold">Города</button>
-                 <button data-category="cars" class="category-btn btn bg-pastel-red text-pastel-red w-full py-4 rounded-xl text-lg font-bold">Автомобили</button>
+                 <button data-category="animals" class="category-btn btn bg-pastel-green text-pastel-green w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Животные</button>
+                 <button data-category="nature" class="category-btn btn bg-pastel-blue text-pastel-blue w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Природа</button>
+                 <button data-category="cities" class="category-btn btn bg-pastel-yellow text-pastel-yellow w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Города</button>
+                 <button data-category="cars" class="category-btn btn bg-pastel-red text-pastel-red w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Автомобили</button>
             </main>
         </div>
 
@@ -426,6 +426,7 @@
                 timerInterval: null,
                 isPaused: false,
                 isGameActive: false,
+                isRendering: false, // Flag to prevent render race conditions
                 sfxEnabled: true,
                 musicEnabled: true,
                 hintsEnabled: false,
@@ -445,18 +446,20 @@
             let sfxTap, sfxSlide, sfxWin;
             const initAudio = () => {
                 if (sfxTap) return;
-                // New, softer tap sound
-                sfxTap = new Tone.MembraneSynth({
-                    pitchDecay: 0.01,
-                    octaves: 2,
+                // Brighter, more "ringing" tap sound
+                sfxTap = new Tone.FMSynth({
+                    harmonicity: 8,
+                    modulationIndex: 2,
                     oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.3 },
-                    volume: -15
+                    envelope: { attack: 0.001, decay: 0.1, sustain: 0.01, release: 0.2 },
+                    modulation: { type: 'square' },
+                    modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.2 },
+                    volume: -18
                 }).toDestination();
                 
                 sfxSlide = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.1 }, volume: -18 }).toDestination();
 
-                // New, more pleasant win sound
+                // More pleasant win sound
                 sfxWin = new Tone.PolySynth(Tone.FMSynth, {
                     harmonicity: 3.01,
                     modulationIndex: 14,
@@ -469,10 +472,9 @@
                 if (!state.sfxEnabled || !Tone.context.state === 'suspended') return;
                 initAudio();
                 const now = Tone.now();
-                if (sound === 'tap') sfxTap.triggerAttackRelease("C3", "8n", now);
+                if (sound === 'tap') sfxTap.triggerAttackRelease("C5", "8n", now);
                 if (sound === 'slide') sfxSlide.triggerAttackRelease("A5", "32n", now);
                 if (sound === 'win') {
-                    // Pleasant arpeggio for win
                     sfxWin.triggerAttackRelease("C5", "16n", now);
                     sfxWin.triggerAttackRelease("E5", "16n", now + 0.08);
                     sfxWin.triggerAttackRelease("G5", "16n", now + 0.16);
@@ -480,11 +482,29 @@
                 }
             };
 
+            // --- Image Handling ---
+            const loadAndCropImage = (src) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous"; // For loading from external URLs if needed
+                    img.onload = () => {
+                        const size = Math.min(img.width, img.height);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+                        const x = (img.width - size) / 2;
+                        const y = (img.height - size) / 2;
+                        ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+                        resolve(canvas.toDataURL());
+                    };
+                    img.onerror = () => reject(new Error('Image could not be loaded.'));
+                    img.src = src;
+                });
+            };
+
             // --- Game Logic ---
             const initGame = (mode, options) => {
-                // BUG FIX: Clear the board HTML at the very start to prevent duplicated tiles
-                puzzleBoard.innerHTML = '';
-
                 state.gameMode = mode;
                 state.category = options.category || null;
                 state.currentLevel = options.level || 1;
@@ -498,7 +518,6 @@
                 generateBoard();
                 showScreen('game');
                 
-                // Use requestAnimationFrame to ensure the DOM is ready for board rendering
                 requestAnimationFrame(() => {
                     rerenderBoard(() => startGame());
                 });
@@ -532,7 +551,6 @@
                 state.board = Array.from({ length: state.gridSize }, (_, row) => 
                     Array.from({ length: state.gridSize }, (_, col) => row * state.gridSize + col + 1)
                 );
-                // Correctly set the empty tile value
                 state.board[state.gridSize-1][state.gridSize-1] = TILE_COUNT;
                 state.emptyTile = { row: state.gridSize - 1, col: state.gridSize - 1 };
 
@@ -547,10 +565,14 @@
             };
             
             const rerenderBoard = (callback) => {
+                if (state.isRendering) return; // Prevent concurrent renders
+                state.isRendering = true;
+
                 if (state.gameMode === 'image' && state.customImageSrc) {
                     renderImageBoard(callback);
                 } else {
                     renderClassicBoard();
+                    state.isRendering = false; // Finish rendering synchronously
                     if (callback) callback();
                 }
             }
@@ -602,7 +624,7 @@
 
                 const img = new Image();
                 img.onload = () => {
-                    const pieceSize = img.width / state.gridSize; // Assuming image is already a square
+                    const pieceSize = img.width / state.gridSize; 
                     for (let row = 0; row < state.gridSize; row++) {
                         for (let col = 0; col < state.gridSize; col++) {
                              const tileValue = state.board[row][col];
@@ -639,10 +661,12 @@
                             puzzleBoard.appendChild(tile);
                         }
                     }
+                    state.isRendering = false; // Finish rendering
                     if(callback) callback();
                 };
                 img.onerror = () => {
                     showAlert("Ошибка", "Не удалось загрузить изображение. Убедитесь, что файлы лежат в правильной папке.");
+                    state.isRendering = false; // Finish rendering on error
                     showScreen('mainMenu');
                 }
                 img.src = state.customImageSrc;
@@ -821,8 +845,8 @@
                 });
             });
 
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-btn').forEach(async (btn) => {
+                btn.addEventListener('click', async () => {
                     const category = btn.dataset.category;
                     const level = getCategoryProgress(category);
                     
@@ -836,8 +860,13 @@
                     else if (level <= 40) size = 5;
                     else size = 6;
                     
-                    const imageSrc = `${CATEGORIES_DATA[category].path}${level}.jpg`;
-                    initGame('image', { category, imageSrc, size, level });
+                    try {
+                        const imagePath = `${CATEGORIES_DATA[category].path}${level}.jpg`;
+                        const croppedImageSrc = await loadAndCropImage(imagePath);
+                        initGame('image', { category, imageSrc: croppedImageSrc, size, level });
+                    } catch (error) {
+                        showAlert('Ошибка загрузки', 'Не удалось загрузить изображение для этого уровня.');
+                    }
                 });
             });
             
@@ -845,22 +874,13 @@
             imageLoader.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            // Correct cropping logic
-                            const size = Math.min(img.width, img.height);
-                            const canvas = document.createElement('canvas');
-                            canvas.width = size;
-                            canvas.height = size;
-                            const ctx = canvas.getContext('2d');
-                            // Calculate starting points to crop from the center
-                            const x = (img.width - size) / 2;
-                            const y = (img.height - size) / 2;
-                            ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
-                            initGame('image', { imageSrc: canvas.toDataURL(), size: 4 });
-                        };
-                        img.src = event.target.result;
+                    reader.onload = async (event) => {
+                        try {
+                            const croppedImageSrc = await loadAndCropImage(event.target.result);
+                            initGame('image', { imageSrc: croppedImageSrc, size: 4 });
+                        } catch (error) {
+                            showAlert('Ошибка файла', 'Не удалось обработать выбранное изображение.');
+                        }
                     };
                     reader.readAsDataURL(e.target.files[0]);
                 }
@@ -880,14 +900,20 @@
             document.getElementById('pause-btn').addEventListener('click', () => { state.isPaused = true; showModal('pause'); });
             document.getElementById('resume-game-btn').addEventListener('click', () => { state.isPaused = false; hideModal('pause'); });
             
-            const restartGame = () => {
+            const restartGame = async () => {
                 hideAllModals();
-                const options = { size: state.gridSize, category: state.category, level: state.currentLevel, imageSrc: state.customImageSrc };
+                const options = { 
+                    size: state.gridSize, 
+                    category: state.category, 
+                    level: state.currentLevel, 
+                    imageSrc: state.customImageSrc // Already cropped, no need to re-crop
+                };
                 initGame(state.gameMode, options);
             };
+
             document.getElementById('restart-game-btn-pause').addEventListener('click', restartGame);
             document.getElementById('restart-game-btn-win').addEventListener('click', restartGame);
-            document.getElementById('next-level-btn-win').addEventListener('click', () => {
+            document.getElementById('next-level-btn-win').addEventListener('click', async () => {
                 hideAllModals();
                 const nextLevel = state.currentLevel + 1;
                 if (nextLevel > 60) {
@@ -899,8 +925,15 @@
                 if (nextLevel <= 20) size = 4;
                 else if (nextLevel <= 40) size = 5;
                 else size = 6;
-                const imageSrc = `${CATEGORIES_DATA[state.category].path}${nextLevel}.jpg`;
-                initGame('image', { category: state.category, imageSrc, size, level: nextLevel });
+                
+                try {
+                    const imagePath = `${CATEGORIES_DATA[state.category].path}${nextLevel}.jpg`;
+                    const croppedImageSrc = await loadAndCropImage(imagePath);
+                    initGame('image', { category: state.category, imageSrc: croppedImageSrc, size, level: nextLevel });
+                } catch (error) {
+                    showAlert('Ошибка загрузки', 'Не удалось загрузить изображение для следующего уровня.');
+                    showScreen('mainMenu');
+                }
             });
 
 
@@ -940,7 +973,7 @@
                 state[storageKey] = savedValue;
                 const updateUI = setupToggle(toggle, indicator, savedValue, (isEnabled) => {
                     localStorage.setItem(storageKey, isEnabled);
-                    state[storageKey] = isEnabled; // Update global state
+                    state[storageKey] = isEnabled; 
                     onToggle(isEnabled);
                 });
                 return (val) => { state[storageKey] = val; updateUI(val); };
@@ -951,7 +984,7 @@
                  html.classList.toggle('dark', isDark);
                  html.classList.toggle('light', !isDark);
             });
-            const updateMusicToggle = setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
+            setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
                 if (isEnabled) {
                     bgMusic.play().catch(e=>console.log("Music autoplay blocked by browser"));
                 } else {
@@ -969,13 +1002,11 @@
                 }
             });
             
-            // Initial check for music state
             if(state.musicEnabled) {
                 bgMusic.play().catch(e=>console.log("Music autoplay blocked by browser"));
             } else {
                 bgMusic.pause();
             }
-
 
             // --- Category Progress ---
             const getCategoryProgress = (category) => {
@@ -994,11 +1025,10 @@
                 const statsKey = `classic-${state.gridSize}x${state.gridSize}`;
                 const stats = getClassicStats();
                 if (!stats[statsKey]) {
-                    stats[statsKey] = { bestTime: null, bestMoves: null, wins: 0 };
+                    stats[statsKey] = { bestTime: null, wins: 0 };
                 }
                 const current = stats[statsKey];
                 if (current.bestTime === null || state.timer < current.bestTime) current.bestTime = state.timer;
-                if (current.bestMoves === null || state.moves < current.bestMoves) current.bestMoves = state.moves;
                 current.wins++;
                 localStorage.setItem('puzzle-stats-classic', JSON.stringify(stats));
             };
@@ -1022,20 +1052,18 @@
                                     <th scope="col" class="py-2 px-2">Размер</th>
                                     <th scope="col" class="py-2 px-2 text-center">Побед</th>
                                     <th scope="col" class="py-2 px-2 text-center">Лучшее время</th>
-                                    <th scope="col" class="py-2 px-2 text-center">Лучшие ходы</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
 
                 for (const key in modes) {
-                    const data = stats[key] || { wins: 0, bestTime: null, bestMoves: null };
+                    const data = stats[key] || { wins: 0, bestTime: null };
                     tableHTML += `
                         <tr class="border-t border-[var(--bg-tertiary)]">
                             <td class="py-3 px-2 font-bold">${modes[key]}</td>
                             <td class="py-3 px-2 text-center">${data.wins}</td>
                             <td class="py-3 px-2 text-center">${data.bestTime !== null ? formatTime(data.bestTime) : '-'}</td>
-                            <td class="py-3 px-2 text-center">${data.bestMoves !== null ? data.bestMoves : '-'}</td>
                         </tr>
                     `;
                 }
@@ -1072,6 +1100,5 @@
     </script>
 </body>
 </html>
-
 
 
