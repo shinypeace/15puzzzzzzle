@@ -54,14 +54,20 @@
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
+            
+            /* Desktop centering */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         
         /* Main Container for vertical mobile layout */
         .game-container {
             width: 100%;
-            max-width: 480px; /* Optimal width for mobile games */
+            max-width: 480px;
             height: 100vh;
-            height: -webkit-fill-available; /* iOS Safari fix */
+            max-height: 900px; /* Max height for desktop */
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -71,6 +77,14 @@
             background-color: var(--bg-primary);
             padding-bottom: 50px; /* Space for banner ad */
         }
+        
+        @media (min-width: 480px) {
+            .game-container {
+                height: 95vh;
+                border-radius: 20px;
+            }
+        }
+
 
         /* Screen Transitions */
         .screen {
@@ -457,8 +471,8 @@
                 cars: { name: 'Автомобили', path: 'images/cars/' }
             };
 
-            const BOARD_PADDING = 4; // Reduced
-            const TILE_GAP = 4;      // Reduced
+            const BOARD_PADDING = 4;
+            const TILE_GAP = 4;
 
             // --- Sound Engine ---
             let sfxTap, sfxSlide, sfxWin;
@@ -475,9 +489,7 @@
                 const now = Tone.now();
                 if (sound === 'tap') sfxTap.triggerAttackRelease("C5", "8n", now);
                 if (sound === 'slide') sfxSlide.triggerAttackRelease("A5", "32n", now);
-                if (sound === 'win') {
-                    sfxWin.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
-                }
+                if (sound === 'win') sfxWin.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
             };
             
              // --- VK Bridge & Data Storage ---
@@ -495,9 +507,7 @@
                         if (item && item.value) {
                             try {
                                 result[key] = JSON.parse(item.value);
-                            } catch (e) {
-                                result[key] = item.value; // In case it's not a JSON string
-                            }
+                            } catch (e) { result[key] = item.value; }
                         }
                     });
                     return result;
@@ -506,7 +516,6 @@
                     return {};
                 }
             };
-
 
             // --- Image Handling ---
             const loadAndCropImage = (src) => {
@@ -663,6 +672,16 @@
                 };
                 img.src = state.customImageSrc;
             };
+            
+            const onTileClick = (row, col) => {
+                if (state.isPaused || !state.isGameActive) return;
+                const { emptyTile } = state;
+                const isAdjacent = Math.abs(row - emptyTile.row) + Math.abs(col - emptyTile.col) === 1;
+                if (isAdjacent) {
+                    playSound('slide');
+                    swapTiles(row, col, emptyTile.row, emptyTile.col);
+                }
+            };
 
             const swapTiles = (row1, col1, row2, col2) => {
                 [state.board[row1][col1], state.board[row2][col2]] = [state.board[row2][col2], state.board[row1][col1]];
@@ -729,7 +748,7 @@
             };
 
             const formatTime = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-            const showScreen = (name) => Object.values(ALL_SCREENS).forEach(s => s.classList.toggle('hidden', s.id !== `${name}-screen` && s.id !== name));
+            const showScreen = (name) => Object.keys(ALL_SCREENS).forEach(key => ALL_SCREENS[key].classList.toggle('hidden', key !== name));
             const showAlert = (title, text) => {
                 document.getElementById('alert-title').textContent = title;
                 document.getElementById('alert-text').textContent = text;
@@ -741,12 +760,16 @@
 
             // --- Event Listeners Setup ---
             const setupListeners = () => {
-                document.body.addEventListener('click', (e) => {
+                // Delegated listener for tiles
+                puzzleBoard.addEventListener('click', (e) => {
+                    if (state.isPaused || !state.isGameActive) return;
                     const tile = e.target.closest('.tile:not(.empty)');
-                    if (tile && state.isGameActive && !state.isPaused) {
+                    if (tile) {
                         onTileClick(parseInt(tile.dataset.row), parseInt(tile.dataset.col));
                     }
-                }, { once: true }); // Use general delegation instead of re-adding
+                });
+                
+                // All other buttons
                 document.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => playSound('tap')));
 
                 document.querySelectorAll('.game-mode-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -780,6 +803,7 @@
                         } catch (error) { showAlert('Ошибка файла', 'Не удалось обработать изображение.'); }
                     };
                     reader.readAsDataURL(e.target.files[0]);
+                    e.target.value = ''; // Reset file input
                 });
 
                 const addNavListener = (id, screen) => document.getElementById(id).addEventListener('click', () => showScreen(screen));
@@ -835,7 +859,6 @@
                 };
                 applyState(isEnabled);
                 toggleEl.addEventListener('click', () => { isEnabled = !isEnabled; applyState(isEnabled); });
-                return applyState;
             };
 
             // --- Category & Stats Logic ---
@@ -911,7 +934,7 @@
                 const storedData = await loadData(['theme', 'musicEnabled', 'sfxEnabled', 'levelsCompleted']);
                 
                 const html = document.documentElement;
-                const isDark = storedData.theme !== false; // default to dark
+                const isDark = storedData.theme !== false;
                 html.classList.toggle('dark', isDark);
                 html.classList.toggle('light', !isDark);
 
@@ -945,15 +968,12 @@
 
                 if (state.musicEnabled) bgMusic.play().catch(e=>e);
                 
-                // VK App visibility handlers
                 vkBridge.subscribe(e => {
                     if (e.detail.type === 'VKWebAppViewLeave') bgMusic.pause();
                     if (e.detail.type === 'VKWebAppViewRestore' && state.musicEnabled) bgMusic.play().catch(e=>e);
                 });
 
-                // Show Banner Ad
-                vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' })
-                    .catch(error => console.log(error));
+                vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' }).catch(error => console.log(error));
                     
                 const container = document.getElementById('rules-grid-example');
                 for (let i = 1; i <= 15; i++) {
@@ -972,5 +992,4 @@
     </script>
 </body>
 </html>
-
 
