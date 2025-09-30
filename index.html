@@ -205,6 +205,15 @@
             border-radius: 9999px;
             background-color: rgba(0,0,0,0.1);
         }
+        .settings-toggle {
+            width: 2.75rem; /* w-11 */
+            height: 1.5rem; /* h-6 */
+            padding: 0.25rem; /* p-1 */
+        }
+        .settings-toggle-indicator {
+            width: 1rem; /* w-4 */
+            height: 1rem; /* h-4 */
+        }
     </style>
 </head>
 <body class="overflow-hidden">
@@ -299,8 +308,8 @@
             <footer id="game-footer" class="h-16 flex items-center justify-center opacity-0 transition-opacity duration-300">
                 <div class="flex items-center gap-4 bg-[var(--bg-tertiary)] py-2 px-4 rounded-full">
                     <span class="font-semibold text-sm text-[var(--text-secondary)]">Подсказка</span>
-                     <button id="hint-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                        <span id="hint-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+                     <button id="hint-toggle" class="settings-toggle relative inline-flex items-center rounded-full transition-colors">
+                        <span id="hint-toggle-indicator" class="settings-toggle-indicator inline-block bg-white rounded-full transform transition-transform"></span>
                     </button>
                 </div>
             </footer>
@@ -340,20 +349,20 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Тёмная тема</span>
-                        <button id="theme-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="theme-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+                        <button id="theme-toggle" class="settings-toggle relative inline-flex items-center rounded-full transition-colors">
+                            <span id="theme-toggle-indicator" class="settings-toggle-indicator inline-block bg-white rounded-full transform transition-transform"></span>
                         </button>
                     </div>
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Музыка</span>
-                        <button id="music-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="music-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+                        <button id="music-toggle" class="settings-toggle relative inline-flex items-center rounded-full transition-colors">
+                            <span id="music-toggle-indicator" class="settings-toggle-indicator inline-block bg-white rounded-full transform transition-transform"></span>
                         </button>
                     </div>
                     <div class="flex justify-between items-center bg-[var(--bg-tertiary)] p-4 rounded-lg">
                         <span class="font-medium">Звуки</span>
-                        <button id="sfx-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors bg-[var(--bg-primary)]">
-                            <span id="sfx-toggle-indicator" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+                        <button id="sfx-toggle" class="settings-toggle relative inline-flex items-center rounded-full transition-colors">
+                            <span id="sfx-toggle-indicator" class="settings-toggle-indicator inline-block bg-white rounded-full transform transition-transform"></span>
                         </button>
                     </div>
                 </div>
@@ -509,7 +518,7 @@
                             try {
                                 loadedData[item.key] = item.value ? JSON.parse(item.value) : null;
                             } catch (e) {
-                                loadedData[item.key] = null; // Handle empty or invalid JSON
+                                loadedData[item.key] = null;
                                 console.log(`Could not parse JSON for key: ${item.key}`)
                             }
                         });
@@ -517,7 +526,6 @@
                     return loadedData;
                 } catch (error) {
                     console.error('Failed to load keys:', error);
-                    // Return a default structure so the app doesn't crash
                     const defaultData = {};
                     keys.forEach(key => defaultData[key] = null);
                     return defaultData;
@@ -1006,7 +1014,8 @@
             const setupToggle = (toggleEl, indicatorEl, initialValue, onToggle) => {
                 let isEnabled = initialValue;
                 const applyState = (enabled) => {
-                    indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0)';
+                    // Corrected transform value for w-11 container and w-4 indicator with p-1 on container
+                    indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0rem)';
                     toggleEl.classList.toggle('bg-[var(--accent-primary)]', enabled);
                     toggleEl.classList.toggle('bg-[var(--bg-tertiary)]', !enabled);
                     onToggle(enabled);
@@ -1110,15 +1119,15 @@
             // --- Other Games Modal ---
             const populateOtherGames = () => {
                 const games = [
-                    { id: 51999489, name: 'Hexa', icon: 'hexa.png' },
-                    { id: 51989408, name: 'Plumber', icon: 'plumber.png' },
-                    { id: 51987513, name: 'Link', icon: 'link.png' },
-                    { id: 51982006, name: 'Sort', icon: 'sort.png' },
-                    { id: 51978283, name: 'Find', icon: 'find.png' },
-                    { id: 51976694, name: '2048', icon: '2048.png' },
-                    { id: 51974911, name: 'Sudoku', icon: 'sudoku.png' },
-                    { id: 51973650, name: 'Mines', icon: 'mines.png' },
-                    { id: 51970228, name: 'Snake', icon: 'snake.png' }
+                    { id: 51999489, name: 'Hexa', icon: 'icon1.png' },
+                    { id: 51989408, name: 'Plumber', icon: 'icon2.png' },
+                    { id: 51987513, name: 'Link', icon: 'icon3.png' },
+                    { id: 51982006, name: 'Sort', icon: 'icon4.png' },
+                    { id: 51978283, name: 'Find', icon: 'icon5.png' },
+                    { id: 51976694, name: '2048', icon: 'icon6.png' },
+                    { id: 51974911, name: 'Sudoku', icon: 'icon7.png' },
+                    { id: 51973650, name: 'Mines', icon: 'icon8.png' },
+                    { id: 51970228, name: 'Snake', icon: 'icon9.png' }
                 ];
                 const container = document.getElementById('other-games-container');
                 container.innerHTML = '';
@@ -1168,6 +1177,9 @@
                 generateRulesGrid();
                 populateOtherGames();
 
+                // This is the correct VK Bridge method to handle app visibility changes.
+                // It ensures music (and potentially other game processes) pauses when the
+                // user switches to another app or screen and resumes upon return.
                 vkBridge.subscribe(({ detail: { type, data }}) => {
                     if (type === 'VKWebAppViewLeave') {
                         bgMusic.pause();
@@ -1193,3 +1205,4 @@
     </script>
 </body>
 </html>
+
