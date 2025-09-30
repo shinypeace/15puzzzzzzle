@@ -12,15 +12,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #f3f4f6; /* gray-100 */
-            --bg-secondary: #ffffff; /* white */
-            --bg-tertiary: #e5e7eb; /* gray-200 */
-            --text-primary: #111827; /* gray-900 */
-            --text-secondary: #4b5563; /* gray-600 */
-            --accent-primary: #4f46e5; /* indigo-600 */
-            --accent-primary-hover: #4338ca; /* indigo-700 */
-            --accent-secondary: #db2777; /* pink-600 */
-            --accent-secondary-hover: #be185d; /* pink-700 */
+            --bg-primary: #f3f4f6;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --accent-primary: #4f46e5;
+            --accent-primary-hover: #4338ca;
+            --accent-secondary: #10b981; /* Emerald 500 */
+            --accent-secondary-hover: #059669; /* Emerald 600 */
             --tile-bg: #ffffff;
             --tile-text: #4f46e5;
             --shadow-color: rgba(0, 0, 0, 0.1);
@@ -28,46 +28,34 @@
         }
 
         html.dark {
-            --bg-primary: #111827; /* gray-900 */
-            --bg-secondary: #1f2937; /* gray-800 */
-            --bg-tertiary: #374151; /* gray-700 */
-            --text-primary: #f9fafb; /* gray-50 */
-            --text-secondary: #d1d5db; /* gray-300 */
-            --accent-primary: #6366f1; /* indigo-500 */
-            --accent-primary-hover: #4f46e5; /* indigo-600 */
-            --accent-secondary: #f9a8d4; /* pink-300 */
-            --accent-secondary-hover: #f472b6; /* pink-400 */
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-secondary: #34d399; /* Emerald 400 */
+            --accent-secondary-hover: #10b981; /* Emerald 500 */
             --tile-bg: #374151;
             --tile-text: #c7d2fe;
             --shadow-color: rgba(0, 0, 0, 0.4);
             --modal-backdrop: rgba(0, 0, 0, 0.7);
         }
 
-        /* Basic Setup & Anti-Selection */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
-            user-select: none; /* Disable text selection */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            
-            /* Desktop centering */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
         }
         
-        /* Main Container for vertical mobile layout */
         .game-container {
             width: 100%;
             max-width: 480px;
             height: 100vh;
-            max-height: 900px; /* Max height for desktop */
+            height: -webkit-fill-available;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -75,18 +63,8 @@
             position: relative;
             overflow: hidden;
             background-color: var(--bg-primary);
-            padding-bottom: 50px; /* Space for banner ad */
-        }
-        
-        @media (min-width: 480px) {
-            .game-container {
-                height: 95vh;
-                border-radius: 20px;
-            }
         }
 
-
-        /* Screen Transitions */
         .screen {
             position: absolute;
             top: 0;
@@ -99,6 +77,7 @@
             will-change: transform, opacity;
             backface-visibility: hidden;
             overflow-y: auto;
+            padding-bottom: 50px; /* Space for banner ad */
         }
 
         .screen.hidden {
@@ -107,7 +86,6 @@
             pointer-events: none;
         }
         
-        /* Glassmorphism Modal */
         .modal {
             background-color: var(--modal-backdrop);
             backdrop-filter: blur(8px);
@@ -126,7 +104,6 @@
             opacity: 1;
         }
 
-        /* Custom Button Styles */
         .btn {
             transition: transform 0.1s ease-out, background-color 0.2s;
         }
@@ -146,15 +123,14 @@
             color: var(--text-primary);
         }
         .btn-other-games {
-            background-color: var(--accent-secondary);
-            color: white;
+             background-color: var(--accent-secondary);
+             color: white;
+             box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
         }
         .btn-other-games:hover {
-             background-color: var(--accent-secondary-hover);
+            background-color: var(--accent-secondary-hover);
         }
 
-
-        /* Custom Pastel & Classic Colors */
         .bg-pastel-green { background-color: #dcfce7; }
         .bg-pastel-blue { background-color: #dbeafe; }
         .bg-pastel-yellow { background-color: #fef08a; }
@@ -170,26 +146,12 @@
         .text-classic-2 { color: #065f46; }
         .bg-classic-3 { background-color: #fef9c3; }
         .text-classic-3 { color: #854d0e; }
-        
-        .category-btn .level-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: var(--accent-primary);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 9999px;
-            border: 2px solid var(--bg-secondary);
-        }
 
-        /* Puzzle Board */
         #puzzle-board {
             aspect-ratio: 1 / 1;
-            padding: 4px; /* Reduced gap */
+            padding: 4px;
             background-color: var(--bg-tertiary);
-            border-radius: 16px;
+            border-radius: 12px;
             touch-action: none;
             position: relative;
         }
@@ -201,8 +163,9 @@
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            border-radius: 12px;
+            border-radius: 8px; /* Slightly smaller radius */
             cursor: pointer;
+            user-select: none;
             position: absolute;
             box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
             transition: top 0.2s cubic-bezier(0.25, 1, 0.5, 1), left 0.2s cubic-bezier(0.25, 1, 0.5, 1);
@@ -216,7 +179,7 @@
         .tile canvas {
             width: 100%;
             height: 100%;
-            border-radius: 12px;
+            border-radius: 8px;
         }
         .tile .hint-number {
             position: absolute;
@@ -229,9 +192,23 @@
             pointer-events: none;
         }
         
+        .rules-grid-cell {
+            font-size: 1rem;
+        }
+        .category-btn .level-display {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            background-color: rgba(0,0,0,0.1);
+        }
     </style>
 </head>
-<body class="overflow-hidden" oncontextmenu="return false;">
+<body class="overflow-hidden">
+    <audio id="bg-music" src="music.mp3" loop></audio>
 
     <div id="game-container" class="game-container">
 
@@ -246,7 +223,7 @@
                 <button data-mode="classic" class="game-mode-btn btn btn-primary w-full py-4 rounded-xl text-lg font-bold">Классика</button>
                 <button data-mode="category" class="game-mode-btn btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Категории</button>
                 <button id="custom-photo-btn" class="btn btn-secondary w-full py-4 rounded-xl text-lg font-bold">Своё фото</button>
-                <button id="other-games-btn" class="btn btn-other-games w-full py-4 rounded-xl text-lg font-bold mt-4">Другие игры</button>
+                <button id="other-games-btn" class="btn btn-other-games w-full py-4 rounded-xl text-lg font-bold">Другие игры</button>
                 <input type="file" id="image-loader" class="hidden" accept="image/*">
             </main>
 
@@ -266,7 +243,7 @@
         <!-- ===== Classic Mode Size Selection Screen ===== -->
         <div id="classic-menu" class="screen hidden flex flex-col p-8">
             <header class="flex items-center mb-8">
-                <button id="back-to-main-from-classic" class="btn btn-secondary p-3 rounded-full">
+                <button class="back-btn btn btn-secondary p-3 rounded-full">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Размер поля</h2>
@@ -281,16 +258,16 @@
         <!-- ===== Category Selection Screen ===== -->
         <div id="category-menu" class="screen hidden flex flex-col p-8">
             <header class="flex items-center mb-8">
-                <button id="back-to-main-from-cat" class="btn btn-secondary p-3 rounded-full">
+                <button class="back-btn btn btn-secondary p-3 rounded-full">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
                 <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Категории</h2>
             </header>
-            <main class="flex-grow grid grid-cols-2 gap-4">
-                 <button data-category="animals" class="relative category-btn btn bg-pastel-green text-pastel-green w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Животные</button>
-                 <button data-category="nature" class="relative category-btn btn bg-pastel-blue text-pastel-blue w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Природа</button>
-                 <button data-category="cities" class="relative category-btn btn bg-pastel-yellow text-pastel-yellow w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Города</button>
-                 <button data-category="cars" class="relative category-btn btn bg-pastel-red text-pastel-red w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Автомобили</button>
+            <main class="flex-grow flex flex-col justify-center gap-4">
+                 <button data-category="animals" class="relative category-btn btn bg-pastel-green text-pastel-green w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Животные<span class="level-display"></span></button>
+                 <button data-category="nature" class="relative category-btn btn bg-pastel-blue text-pastel-blue w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Природа<span class="level-display"></span></button>
+                 <button data-category="cities" class="relative category-btn btn bg-pastel-yellow text-pastel-yellow w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Города<span class="level-display"></span></button>
+                 <button data-category="cars" class="relative category-btn btn bg-pastel-red text-pastel-red w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">Автомобили<span class="level-display"></span></button>
             </main>
         </div>
 
@@ -337,15 +314,15 @@
                     Цель игры — упорядочить плитки по номерам. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
                 </p>
                 <div id="rules-grid-example" class="aspect-square bg-[var(--bg-tertiary)] rounded-lg p-2 grid grid-cols-4 gap-1"></div>
-                <button id="close-rules-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Понятно</button>
+                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Понятно</button>
             </div>
         </div>
         
         <div id="other-games-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
-            <div class="modal-content w-full max-w-md p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-bold text-center mb-6">Другие игры</h2>
+            <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-bold text-center mb-4">Другие игры</h2>
                 <div id="other-games-container" class="grid grid-cols-3 gap-4"></div>
-                <button id="close-other-games-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Закрыть</button>
+                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Закрыть</button>
             </div>
         </div>
 
@@ -353,7 +330,7 @@
             <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-4">Статистика (Классика)</h2>
                 <div id="stats-container" class="space-y-4"></div>
-                <button id="close-stats-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Закрыть</button>
+                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Закрыть</button>
             </div>
         </div>
 
@@ -380,7 +357,7 @@
                         </button>
                     </div>
                 </div>
-                <button id="close-settings-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Готово</button>
+                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Готово</button>
             </div>
         </div>
 
@@ -420,25 +397,28 @@
 
         <div id="alert-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
             <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg text-center">
-                 <h2 id="alert-title" class="text-2xl font-bold mb-4">Поздравляем!</h2>
+                 <h2 id="alert-title" class="text-2xl font-bold mb-4"></h2>
                  <p id="alert-text" class="text-[var(--text-secondary)] mb-6"></p>
-                 <button id="close-alert-btn" class="btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Отлично</button>
+                 <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Отлично</button>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- VK Bridge Initialization ---
             vkBridge.send('VKWebAppInit');
+            vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' })
+                .catch(error => console.log('Banner Ad error:', error));
 
             // --- DOM Elements ---
-            const ALL_SCREENS = {
+            const screens = {
                 mainMenu: document.getElementById('main-menu'),
                 classicMenu: document.getElementById('classic-menu'),
                 categoryMenu: document.getElementById('category-menu'),
                 game: document.getElementById('game-screen'),
             };
-            const ALL_MODALS = {
+            const modals = {
                 rules: document.getElementById('rules-modal'),
                 stats: document.getElementById('stats-modal'),
                 settings: document.getElementById('settings-modal'),
@@ -457,11 +437,25 @@
 
             // --- Game State ---
             let state = {
-                currentScreen: 'mainMenu', gameMode: null, category: null, currentLevel: 1,
-                gridSize: 4, customImageSrc: null, board: [], emptyTile: { row: 3, col: 3 },
-                moves: 0, timer: 0, timerInterval: null, isPaused: false, isGameActive: false,
-                isRendering: false, sfxEnabled: true, musicEnabled: true, hintsEnabled: false,
+                currentScreen: 'mainMenu',
+                gameMode: null,
+                category: null,
+                currentLevel: 1,
+                gridSize: 4,
+                customImageSrc: null,
+                board: [],
+                emptyTile: { row: 3, col: 3 },
+                moves: 0,
+                timer: 0,
+                timerInterval: null,
+                isPaused: false,
+                isGameActive: false,
+                isRendering: false,
+                sfxEnabled: true,
+                musicEnabled: true,
+                hintsEnabled: false,
                 levelsCompletedSinceAd: 0,
+                isDataLoaded: false,
             };
 
             const CATEGORIES_DATA = {
@@ -472,7 +466,7 @@
             };
 
             const BOARD_PADDING = 4;
-            const TILE_GAP = 4;
+            const TILE_GAP = 4; // Reduced gap
 
             // --- Sound Engine ---
             let sfxTap, sfxSlide, sfxWin;
@@ -484,36 +478,49 @@
             };
             
             const playSound = (sound) => {
-                if (!state.sfxEnabled || Tone.context.state === 'suspended') return;
+                if (!state.sfxEnabled || !Tone.context.state === 'suspended') return;
                 initAudio();
                 const now = Tone.now();
                 if (sound === 'tap') sfxTap.triggerAttackRelease("C5", "8n", now);
                 if (sound === 'slide') sfxSlide.triggerAttackRelease("A5", "32n", now);
-                if (sound === 'win') sfxWin.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
+                if (sound === 'win') {
+                    sfxWin.triggerAttackRelease("C5", "16n", now);
+                    sfxWin.triggerAttackRelease("E5", "16n", now + 0.08);
+                    sfxWin.triggerAttackRelease("G5", "16n", now + 0.16);
+                    sfxWin.triggerAttackRelease("C6", "16n", now + 0.24);
+                }
             };
             
-             // --- VK Bridge & Data Storage ---
-            const saveData = (key, value) => {
-                vkBridge.send('VKWebAppStorageSet', { key: key, value: JSON.stringify(value) })
-                    .catch(error => console.error(`Error saving ${key}:`, error));
+            // --- VK Data Storage ---
+            const saveData = async (key, value) => {
+                try {
+                    await vkBridge.send('VKWebAppStorageSet', { key: key, value: JSON.stringify(value) });
+                } catch (error) {
+                    console.error(`Failed to save key "${key}":`, error);
+                }
             };
 
             const loadData = async (keys) => {
                 try {
                     const data = await vkBridge.send('VKWebAppStorageGet', { keys: keys });
-                    const result = {};
-                    keys.forEach(key => {
-                        const item = data.keys.find(d => d.key === key);
-                        if (item && item.value) {
+                    const loadedData = {};
+                    if (data.keys) {
+                        data.keys.forEach(item => {
                             try {
-                                result[key] = JSON.parse(item.value);
-                            } catch (e) { result[key] = item.value; }
-                        }
-                    });
-                    return result;
+                                loadedData[item.key] = item.value ? JSON.parse(item.value) : null;
+                            } catch (e) {
+                                loadedData[item.key] = null; // Handle empty or invalid JSON
+                                console.log(`Could not parse JSON for key: ${item.key}`)
+                            }
+                        });
+                    }
+                    return loadedData;
                 } catch (error) {
-                    console.error('Error loading data:', error);
-                    return {};
+                    console.error('Failed to load keys:', error);
+                    // Return a default structure so the app doesn't crash
+                    const defaultData = {};
+                    keys.forEach(key => defaultData[key] = null);
+                    return defaultData;
                 }
             };
 
@@ -525,7 +532,8 @@
                     img.onload = () => {
                         const size = Math.min(img.width, img.height);
                         const canvas = document.createElement('canvas');
-                        canvas.width = size; canvas.height = size;
+                        canvas.width = size;
+                        canvas.height = size;
                         const ctx = canvas.getContext('2d');
                         const x = (img.width - size) / 2;
                         const y = (img.height - size) / 2;
@@ -544,12 +552,17 @@
                 state.currentLevel = options.level || 1;
                 state.customImageSrc = options.imageSrc || null;
                 state.gridSize = options.size || 4;
+                
                 gameFooter.classList.toggle('opacity-0', mode !== 'image');
+                
                 updateGameHeader();
                 resetGameState();
                 generateBoard();
                 showScreen('game');
-                requestAnimationFrame(() => rerenderBoard(startGame));
+                
+                requestAnimationFrame(() => {
+                    rerenderBoard(() => startGame());
+                });
             };
 
             const updateGameHeader = () => {
@@ -566,7 +579,10 @@
             };
 
             const resetGameState = () => {
-                state.moves = 0; state.timer = 0; state.isPaused = false; state.isGameActive = true;
+                state.moves = 0;
+                state.timer = 0;
+                state.isPaused = false;
+                state.isGameActive = true;
                 movesEl.textContent = '0';
                 timerEl.textContent = '00:00';
                 clearInterval(state.timerInterval);
@@ -574,27 +590,34 @@
 
             const generateBoard = () => {
                 const TILE_COUNT = state.gridSize * state.gridSize;
-                state.board = Array.from({ length: state.gridSize }, (_, r) => Array.from({ length: state.gridSize }, (_, c) => r * state.gridSize + c + 1));
-                state.board[state.gridSize - 1][state.gridSize - 1] = TILE_COUNT;
+                state.board = Array.from({ length: state.gridSize }, (_, row) => 
+                    Array.from({ length: state.gridSize }, (_, col) => row * state.gridSize + col + 1)
+                );
+                state.board[state.gridSize-1][state.gridSize-1] = TILE_COUNT;
                 state.emptyTile = { row: state.gridSize - 1, col: state.gridSize - 1 };
-                for (let i = 0; i < TILE_COUNT * 10; i++) {
+
+                let shuffleMoves = state.gridSize * state.gridSize * 10;
+                for (let i = 0; i < shuffleMoves; i++) {
                     const neighbors = getNeighbors(state.emptyTile.row, state.emptyTile.col);
-                    const randNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-                    [state.board[state.emptyTile.row][state.emptyTile.col], state.board[randNeighbor.row][randNeighbor.col]] = [state.board[randNeighbor.row][randNeighbor.col], state.board[state.emptyTile.row][state.emptyTile.col]];
-                    state.emptyTile = randNeighbor;
+                    const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    [state.board[state.emptyTile.row][state.emptyTile.col], state.board[randomNeighbor.row][randomNeighbor.col]] = 
+                        [state.board[randomNeighbor.row][randomNeighbor.col], state.board[state.emptyTile.row][state.emptyTile.col]];
+                    state.emptyTile = randomNeighbor;
                 }
             };
             
             const rerenderBoard = (callback) => {
                 if (state.isRendering) return;
                 state.isRendering = true;
-                if (state.gameMode === 'image' && state.customImageSrc) renderImageBoard(callback);
-                else {
+
+                if (state.gameMode === 'image' && state.customImageSrc) {
+                    renderImageBoard(callback);
+                } else {
                     renderClassicBoard();
                     state.isRendering = false;
                     if (callback) callback();
                 }
-            };
+            }
 
             const getTileMetrics = () => {
                 const boardSize = puzzleBoard.clientWidth - (BOARD_PADDING * 2);
@@ -602,26 +625,35 @@
                 return { tileSize };
             };
 
-            const getTilePosition = (row, col, tileSize) => ({
-                top: BOARD_PADDING + row * (tileSize + TILE_GAP),
-                left: BOARD_PADDING + col * (tileSize + TILE_GAP)
-            });
+            const getTilePosition = (row, col, tileSize) => {
+                const top = BOARD_PADDING + row * (tileSize + TILE_GAP);
+                const left = BOARD_PADDING + col * (tileSize + TILE_GAP);
+                return { top, left };
+            };
             
             const renderClassicBoard = () => {
                 puzzleBoard.innerHTML = '';
                 const { tileSize } = getTileMetrics();
                 const TILE_COUNT = state.gridSize * state.gridSize;
+
                 for (let row = 0; row < state.gridSize; row++) {
                     for (let col = 0; col < state.gridSize; col++) {
                         const tileValue = state.board[row][col];
                         const tile = document.createElement('div');
-                        tile.className = 'tile';
-                        if (tileValue === TILE_COUNT) tile.classList.add('empty');
-                        else tile.textContent = tileValue;
+                        tile.classList.add('tile');
+                        if (tileValue === TILE_COUNT) {
+                            tile.classList.add('empty');
+                        } else {
+                            tile.textContent = tileValue;
+                        }
                         tile.style.fontSize = `${tileSize * 0.4}px`;
                         const { top, left } = getTilePosition(row, col, tileSize);
-                        Object.assign(tile.style, { width: `${tileSize}px`, height: `${tileSize}px`, top: `${top}px`, left: `${left}px` });
-                        Object.assign(tile.dataset, { row, col });
+                        tile.style.width = `${tileSize}px`;
+                        tile.style.height = `${tileSize}px`;
+                        tile.style.top = `${top}px`;
+                        tile.style.left = `${left}px`;
+                        tile.dataset.row = row;
+                        tile.dataset.col = col;
                         puzzleBoard.appendChild(tile);
                     }
                 }
@@ -631,23 +663,27 @@
                 puzzleBoard.innerHTML = '';
                 const { tileSize } = getTileMetrics();
                 const TILE_COUNT = state.gridSize * state.gridSize;
+
                 const img = new Image();
                 img.onload = () => {
-                    const pieceSize = img.width / state.gridSize;
+                    const pieceSize = img.width / state.gridSize; 
                     for (let row = 0; row < state.gridSize; row++) {
                         for (let col = 0; col < state.gridSize; col++) {
-                            const tileValue = state.board[row][col];
-                            const tile = document.createElement('div');
-                            tile.className = 'tile';
-                            if (tileValue === TILE_COUNT) tile.classList.add('empty');
-                            else {
+                             const tileValue = state.board[row][col];
+                             const tile = document.createElement('div');
+                             tile.classList.add('tile');
+                            if (tileValue === TILE_COUNT) {
+                                tile.classList.add('empty');
+                            } else {
                                 const canvas = document.createElement('canvas');
-                                canvas.width = pieceSize; canvas.height = pieceSize;
+                                canvas.width = pieceSize;
+                                canvas.height = pieceSize;
                                 const ctx = canvas.getContext('2d');
                                 const sX = ((tileValue - 1) % state.gridSize) * pieceSize;
                                 const sY = Math.floor((tileValue - 1) / state.gridSize) * pieceSize;
                                 ctx.drawImage(img, sX, sY, pieceSize, pieceSize, 0, 0, pieceSize, pieceSize);
                                 tile.appendChild(canvas);
+
                                 if (state.hintsEnabled) {
                                     const hint = document.createElement('span');
                                     hint.className = 'hint-number';
@@ -657,26 +693,32 @@
                                 }
                             }
                             const { top, left } = getTilePosition(row, col, tileSize);
-                            Object.assign(tile.style, { width: `${tileSize}px`, height: `${tileSize}px`, top: `${top}px`, left: `${left}px` });
-                            Object.assign(tile.dataset, { row, col, value: tileValue });
+                            tile.style.width = `${tileSize}px`;
+                            tile.style.height = `${tileSize}px`;
+                            tile.style.top = `${top}px`;
+                            tile.style.left = `${left}px`;
+                            tile.dataset.row = row;
+                            tile.dataset.col = col;
+                            tile.dataset.value = tileValue;
                             puzzleBoard.appendChild(tile);
                         }
                     }
                     state.isRendering = false;
-                    if (callback) callback();
+                    if(callback) callback();
                 };
                 img.onerror = () => {
-                    showAlert("Ошибка", "Не удалось загрузить изображение.");
+                    showAlert("Ошибка", "Не удалось загрузить изображение. Убедитесь, что файлы лежат в правильной папке.");
                     state.isRendering = false;
                     showScreen('mainMenu');
-                };
+                }
                 img.src = state.customImageSrc;
             };
-            
+
             const onTileClick = (row, col) => {
                 if (state.isPaused || !state.isGameActive) return;
                 const { emptyTile } = state;
                 const isAdjacent = Math.abs(row - emptyTile.row) + Math.abs(col - emptyTile.col) === 1;
+
                 if (isAdjacent) {
                     playSound('slide');
                     swapTiles(row, col, emptyTile.row, emptyTile.col);
@@ -688,54 +730,93 @@
                 const tile1 = puzzleBoard.querySelector(`[data-row='${row1}'][data-col='${col1}']`);
                 const tile2 = puzzleBoard.querySelector(`[data-row='${row2}'][data-col='${col2}']`);
                 if (!tile1 || !tile2) return;
-
                 const { tileSize } = getTileMetrics();
                 const pos1 = getTilePosition(row1, col1, tileSize);
                 const pos2 = getTilePosition(row2, col2, tileSize);
-                
-                Object.assign(tile1.style, { top: `${pos2.top}px`, left: `${pos2.left}px` });
-                Object.assign(tile1.dataset, { row: row2, col: col2 });
-                Object.assign(tile2.style, { top: `${pos1.top}px`, left: `${pos1.left}px` });
-                Object.assign(tile2.dataset, { row: row1, col: col1 });
-                
+                tile1.style.top = `${pos2.top}px`;
+                tile1.style.left = `${pos2.left}px`;
+                tile1.dataset.row = row2;
+                tile1.dataset.col = col2;
+                tile2.style.top = `${pos1.top}px`;
+                tile2.style.left = `${pos1.left}px`;
+                tile2.dataset.row = row1;
+                tile2.dataset.col = col1;
                 state.emptyTile = { row: row1, col: col1 };
                 updateMoves();
-                if (checkWin()) endGame(true);
+                if (checkWin()) {
+                    endGame(true);
+                }
             };
 
-            const getNeighbors = (r, c) => [{r:r-1,c},{r:r+1,c},{r,c:c-1},{r,c:c+1}].filter(({r,c})=>r>=0&&r<state.gridSize&&c>=0&&c<state.gridSize);
-            const updateMoves = () => movesEl.textContent = ++state.moves;
-
-            const checkWin = () => state.board.flat().every((val, i) => val === i + 1);
+            const getNeighbors = (row, col) => {
+                const neighbors = [];
+                if (row > 0) neighbors.push({ row: row - 1, col });
+                if (row < state.gridSize - 1) neighbors.push({ row: row + 1, col });
+                if (col > 0) neighbors.push({ row, col: col - 1 });
+                if (col < state.gridSize - 1) neighbors.push({ row, col: col + 1 });
+                return neighbors;
+            };
             
-            const startGame = () => { state.isGameActive = true; startTimer(); };
+            const updateMoves = () => {
+                state.moves++;
+                movesEl.textContent = state.moves;
+            };
 
-            const endGame = (isWin) => {
+            const checkWin = () => {
+                let expectedValue = 1;
+                const TILE_COUNT = state.gridSize * state.gridSize;
+                for (let r = 0; r < state.gridSize; r++) {
+                    for (let c = 0; c < state.gridSize; c++) {
+                        const value = state.board[r][c];
+                        if (r === state.gridSize - 1 && c === state.gridSize - 1) {
+                           if (value !== TILE_COUNT) return false;
+                        } else {
+                           if (value !== expectedValue) return false;
+                        }
+                        expectedValue++;
+                    }
+                }
+                return true;
+            };
+            
+            const startGame = () => {
+                state.isGameActive = true;
+                startTimer();
+            };
+
+            const endGame = async (isWin) => {
                 state.isGameActive = false;
                 clearInterval(state.timerInterval);
                 if (isWin) {
                     playSound('win');
-                    document.getElementById('win-time').textContent = formatTime(state.timer);
-                    document.getElementById('win-moves').textContent = state.moves;
+                    
                     const isCategoryMode = state.gameMode === 'image' && state.category;
-                    document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
-                    document.getElementById('restart-game-btn-win').classList.toggle('hidden', isCategoryMode);
 
                     if (isCategoryMode) {
-                        document.getElementById('win-subtitle').textContent = `Уровень ${state.currentLevel} пройден!`;
+                        state.levelsCompletedSinceAd++;
+                        saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
                         saveCategoryProgress(state.category, state.currentLevel + 1);
-                    } else {
-                        document.getElementById('win-subtitle').textContent = `Отличная работа!`;
                     }
-                    if (state.gameMode === 'classic') saveClassicStats();
-                    
-                    state.levelsCompletedSinceAd++;
-                    if (state.levelsCompletedSinceAd >= 2) {
-                        vkBridge.send('VKWebAppShowInterstitial').catch(e => console.log(e));
-                        state.levelsCompletedSinceAd = 0;
+                    if (state.gameMode === 'classic') {
+                        saveClassicStats();
                     }
-                    saveData('levelsCompleted', state.levelsCompletedSinceAd);
 
+                    if (isCategoryMode && state.levelsCompletedSinceAd >= 2) {
+                        try {
+                           await vkBridge.send('VKWebAppShowInterstitial');
+                           state.levelsCompletedSinceAd = 0;
+                           saveData('levelsCompletedSinceAd', 0);
+                        } catch (e) {
+                            console.log("Interstitial Ad error:", e);
+                        }
+                    }
+                    
+                    document.getElementById('win-time').textContent = formatTime(state.timer);
+                    document.getElementById('win-moves').textContent = state.moves;
+                    document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
+                    document.getElementById('restart-game-btn-win').classList.toggle('hidden', isCategoryMode);
+                    document.getElementById('win-subtitle').textContent = isCategoryMode ? `Уровень ${state.currentLevel} пройден!` : `Отличная работа!`;
+                    
                     showModal('win');
                 }
             };
@@ -743,253 +824,372 @@
             const startTimer = () => {
                 clearInterval(state.timerInterval);
                 state.timerInterval = setInterval(() => {
-                    if (!state.isPaused) timerEl.textContent = formatTime(++state.timer);
+                    if (!state.isPaused) {
+                        state.timer++;
+                        timerEl.textContent = formatTime(state.timer);
+                    }
                 }, 1000);
             };
 
-            const formatTime = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-            const showScreen = (name) => Object.keys(ALL_SCREENS).forEach(key => ALL_SCREENS[key].classList.toggle('hidden', key !== name));
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                return `${mins}:${secs}`;
+            };
+            
+            const showScreen = (screenName) => {
+                Object.values(screens).forEach(s => s.classList.add('hidden'));
+                screens[screenName].classList.remove('hidden');
+                state.currentScreen = screenName;
+                if(screenName === 'categoryMenu') {
+                    updateCategoryLevelsUI();
+                }
+            };
+
             const showAlert = (title, text) => {
                 document.getElementById('alert-title').textContent = title;
                 document.getElementById('alert-text').textContent = text;
                 showModal('alert');
+            }
+
+            const showModal = (modalName) => modals[modalName].classList.remove('hidden');
+            const hideModal = (modalName) => modals[modalName].classList.add('hidden');
+            const hideAllModals = () => Object.values(modals).forEach(m => m.classList.add('hidden'));
+
+            const handleFirstInteraction = () => {
+                Tone.start();
+                if(state.musicEnabled && bgMusic.paused) {
+                    bgMusic.play().catch(e => console.log("Music autoplay blocked"));
+                }
+                document.body.removeEventListener('click', handleFirstInteraction);
+                document.body.removeEventListener('touchend', handleFirstInteraction);
             };
-            const showModal = (name) => ALL_MODALS[name].classList.remove('hidden');
-            const hideModal = (name) => ALL_MODALS[name].classList.add('hidden');
-            const hideAllModals = () => Object.values(ALL_MODALS).forEach(m => m.classList.add('hidden'));
+            document.body.addEventListener('click', handleFirstInteraction, { once: true });
+            document.body.addEventListener('touchend', handleFirstInteraction, { once: true });
 
-            // --- Event Listeners Setup ---
-            const setupListeners = () => {
-                // Delegated listener for tiles
-                puzzleBoard.addEventListener('click', (e) => {
-                    if (state.isPaused || !state.isGameActive) return;
-                    const tile = e.target.closest('.tile:not(.empty)');
-                    if (tile) {
-                        onTileClick(parseInt(tile.dataset.row), parseInt(tile.dataset.col));
-                    }
+            // --- Event Listeners ---
+            document.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => playSound('tap'));
+            });
+
+            puzzleBoard.addEventListener('click', (event) => {
+                if (state.isPaused || !state.isGameActive) return;
+                const tile = event.target.closest('.tile');
+                if (tile && !tile.classList.contains('empty')) {
+                    const row = parseInt(tile.dataset.row, 10);
+                    const col = parseInt(tile.dataset.col, 10);
+                    onTileClick(row, col);
+                }
+            });
+
+            document.querySelectorAll('.game-mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const mode = btn.dataset.mode;
+                    if (mode === 'classic') showScreen('classicMenu');
+                    else if (mode === 'category') showScreen('categoryMenu');
                 });
-                
-                // All other buttons
-                document.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => playSound('tap')));
+            });
 
-                document.querySelectorAll('.game-mode-btn').forEach(btn => btn.addEventListener('click', () => {
-                    if (btn.dataset.mode === 'category') updateCategoryLevels();
-                    showScreen(btn.dataset.mode + 'Menu');
-                }));
-                document.querySelectorAll('.classic-size-btn').forEach(btn => btn.addEventListener('click', () => initGame('classic', { size: parseInt(btn.dataset.size) })));
-                document.querySelectorAll('.category-btn').forEach(btn => btn.addEventListener('click', async () => {
+            document.querySelectorAll('.classic-size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const size = parseInt(btn.dataset.size, 10);
+                    initGame('classic', { size });
+                });
+            });
+
+            document.querySelectorAll('.category-btn').forEach(async (btn) => {
+                btn.addEventListener('click', async () => {
                     const category = btn.dataset.category;
-                    const progress = await getCategoryProgress();
-                    const level = progress[category] || 1;
+                    const level = await getCategoryProgress(category);
+                    
                     if (level > 60) {
-                        showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[category].name}".`);
+                        showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[category].name}". Новые уровни скоро появятся!`);
                         return;
                     }
-                    const size = level <= 20 ? 4 : (level <= 40 ? 5 : 6);
-                    try {
-                        const croppedImageSrc = await loadAndCropImage(`${CATEGORIES_DATA[category].path}${level}.jpg`);
-                        initGame('image', { category, imageSrc: croppedImageSrc, size, level });
-                    } catch (error) { showAlert('Ошибка загрузки', 'Не удалось загрузить изображение.'); }
-                }));
 
-                document.getElementById('custom-photo-btn').addEventListener('click', () => imageLoader.click());
-                imageLoader.addEventListener('change', e => {
-                    if (!e.target.files[0]) return;
+                    let size;
+                    if (level <= 20) size = 4;
+                    else if (level <= 40) size = 5;
+                    else size = 6;
+                    
+                    try {
+                        const imagePath = `${CATEGORIES_DATA[category].path}${level}.jpg`;
+                        const croppedImageSrc = await loadAndCropImage(imagePath);
+                        initGame('image', { category, imageSrc: croppedImageSrc, size, level });
+                    } catch (error) {
+                        showAlert('Ошибка загрузки', 'Не удалось загрузить изображение для этого уровня.');
+                    }
+                });
+            });
+            
+            document.getElementById('custom-photo-btn').addEventListener('click', () => imageLoader.click());
+            imageLoader.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = async event => {
+                    reader.onload = async (event) => {
                         try {
                             const croppedImageSrc = await loadAndCropImage(event.target.result);
                             initGame('image', { imageSrc: croppedImageSrc, size: 4 });
-                        } catch (error) { showAlert('Ошибка файла', 'Не удалось обработать изображение.'); }
+                        } catch (error) {
+                            showAlert('Ошибка файла', 'Не удалось обработать выбранное изображение.');
+                        }
                     };
                     reader.readAsDataURL(e.target.files[0]);
-                    e.target.value = ''; // Reset file input
-                });
-
-                const addNavListener = (id, screen) => document.getElementById(id).addEventListener('click', () => showScreen(screen));
-                addNavListener('back-to-main-from-cat', 'mainMenu');
-                addNavListener('back-to-main-from-classic', 'mainMenu');
-                
-                const addModalListener = (btnId, modalName, action) => document.getElementById(btnId).addEventListener('click', () => action(modalName));
-                addModalListener('rules-btn', 'rules', showModal);
-                addModalListener('close-rules-btn', 'rules', hideModal);
-                addModalListener('stats-btn', 'stats', name => { renderStats(); showModal(name); });
-                addModalListener('close-stats-btn', 'stats', hideModal);
-                addModalListener('settings-btn', 'settings', showModal);
-                addModalListener('close-settings-btn', 'settings', hideModal);
-                addModalListener('close-alert-btn', 'alert', hideModal);
-                addModalListener('other-games-btn', 'otherGames', showModal);
-                addModalListener('close-other-games-btn', 'otherGames', hideModal);
-                
-                addModalListener('pause-btn', 'pause', name => { state.isPaused = true; showModal(name); });
-                addModalListener('resume-game-btn', 'pause', name => { state.isPaused = false; hideModal(name); });
-
-                const restartGame = () => { hideAllModals(); initGame(state.gameMode, { size: state.gridSize, category: state.category, level: state.currentLevel, imageSrc: state.customImageSrc }); };
-                document.getElementById('restart-game-btn-pause').addEventListener('click', restartGame);
-                document.getElementById('restart-game-btn-win').addEventListener('click', restartGame);
-
-                document.getElementById('next-level-btn-win').addEventListener('click', async () => {
-                    hideAllModals();
-                    const nextLevel = state.currentLevel + 1;
-                    if (nextLevel > 60) {
-                        showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[state.category].name}".`);
-                        showScreen('mainMenu');
-                        return;
+                }
+            });
+            
+            document.querySelectorAll('.back-btn').forEach(btn => {
+                btn.addEventListener('click', () => showScreen('mainMenu'));
+            });
+            
+            document.getElementById('rules-btn').addEventListener('click', () => showModal('rules'));
+            document.getElementById('stats-btn').addEventListener('click', () => { renderStats(); showModal('stats'); });
+            document.getElementById('settings-btn').addEventListener('click', () => showModal('settings'));
+            document.getElementById('other-games-btn').addEventListener('click', () => showModal('otherGames'));
+            
+            document.querySelectorAll('.close-modal-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.modal');
+                    if (modal) {
+                       modal.classList.add('hidden');
                     }
-                    const size = nextLevel <= 20 ? 4 : (nextLevel <= 40 ? 5 : 6);
-                    try {
-                        const croppedImageSrc = await loadAndCropImage(`${CATEGORIES_DATA[state.category].path}${nextLevel}.jpg`);
-                        initGame('image', { category: state.category, imageSrc: croppedImageSrc, size, level: nextLevel });
-                    } catch (error) { showAlert('Ошибка загрузки', 'Не удалось загрузить следующий уровень.'); showScreen('mainMenu'); }
                 });
-
-                const exitToMenu = () => { hideAllModals(); showScreen('mainMenu'); };
-                document.getElementById('exit-to-menu-btn-pause').addEventListener('click', exitToMenu);
-                document.getElementById('exit-to-menu-btn-win').addEventListener('click', exitToMenu);
+            });
+            
+            document.getElementById('pause-btn').addEventListener('click', () => { state.isPaused = true; showModal('pause'); });
+            document.getElementById('resume-game-btn').addEventListener('click', () => { state.isPaused = false; hideModal('pause'); });
+            
+            const restartGame = async () => {
+                hideAllModals();
+                const options = { 
+                    size: state.gridSize, 
+                    category: state.category, 
+                    level: state.currentLevel, 
+                    imageSrc: state.customImageSrc
+                };
+                initGame(state.gameMode, options);
             };
 
-            // --- Toggles ---
+            document.getElementById('restart-game-btn-pause').addEventListener('click', restartGame);
+            document.getElementById('restart-game-btn-win').addEventListener('click', restartGame);
+            document.getElementById('next-level-btn-win').addEventListener('click', async () => {
+                hideAllModals();
+                const nextLevel = state.currentLevel + 1;
+                if (nextLevel > 60) {
+                     showAlert('Поздравляем!', `Вы прошли все уровни в категории "${CATEGORIES_DATA[state.category].name}". Новые уровни скоро появятся!`);
+                     showScreen('mainMenu');
+                     return;
+                }
+                let size;
+                if (nextLevel <= 20) size = 4;
+                else if (nextLevel <= 40) size = 5;
+                else size = 6;
+                
+                try {
+                    const imagePath = `${CATEGORIES_DATA[state.category].path}${nextLevel}.jpg`;
+                    const croppedImageSrc = await loadAndCropImage(imagePath);
+                    initGame('image', { category: state.category, imageSrc: croppedImageSrc, size, level: nextLevel });
+                } catch (error) {
+                    showAlert('Ошибка загрузки', 'Не удалось загрузить изображение для следующего уровня.');
+                    showScreen('mainMenu');
+                }
+            });
+
+            const exitToMenu = () => {
+                hideAllModals();
+                showScreen('mainMenu');
+            };
+            document.getElementById('exit-to-menu-btn-pause').addEventListener('click', exitToMenu);
+            document.getElementById('exit-to-menu-btn-win').addEventListener('click', exitToMenu);
+            
+            // --- Settings Toggles ---
             const setupToggle = (toggleEl, indicatorEl, initialValue, onToggle) => {
                 let isEnabled = initialValue;
                 const applyState = (enabled) => {
-                    indicatorEl.style.transform = enabled ? 'translateX(1.5rem)' : 'translateX(0.25rem)';
+                    indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0)';
                     toggleEl.classList.toggle('bg-[var(--accent-primary)]', enabled);
-                    toggleEl.classList.toggle('bg-[var(--bg-primary)]', !enabled);
+                    toggleEl.classList.toggle('bg-[var(--bg-tertiary)]', !enabled);
                     onToggle(enabled);
                 };
                 applyState(isEnabled);
-                toggleEl.addEventListener('click', () => { isEnabled = !isEnabled; applyState(isEnabled); });
+                toggleEl.addEventListener('click', () => {
+                    isEnabled = !isEnabled;
+                    applyState(isEnabled);
+                });
+                return applyState;
+            };
+            
+            const setupPersistentToggle = (toggleId, indicatorId, storageKey, onToggle) => {
+                const toggle = document.getElementById(toggleId);
+                const indicator = document.getElementById(indicatorId);
+                const updateUI = setupToggle(toggle, indicator, state[storageKey], (isEnabled) => {
+                    state[storageKey] = isEnabled; 
+                    saveData(storageKey, isEnabled);
+                    onToggle(isEnabled);
+                });
+                return updateUI;
             };
 
-            // --- Category & Stats Logic ---
-            const getCategoryProgress = async () => (await loadData(['puzzle-progress']))['puzzle-progress'] || {};
-            const saveCategoryProgress = async (category, level) => {
-                const progress = await getCategoryProgress();
-                progress[category] = level;
-                saveData('puzzle-progress', progress);
+            const setupAllToggles = () => {
+                 setupPersistentToggle('theme-toggle', 'theme-toggle-indicator', 'theme', (isDark) => {
+                     document.documentElement.classList.toggle('dark', isDark);
+                     document.documentElement.classList.toggle('light', !isDark);
+                });
+                setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', (isEnabled) => {
+                    if (isEnabled) {
+                       bgMusic.play().catch(e=>console.log("Music autoplay blocked"));
+                    } else {
+                        bgMusic.pause();
+                    }
+                });
+                setupPersistentToggle('sfx-toggle', 'sfx-toggle-indicator', 'sfxEnabled', (isEnabled) => {});
+
+                const hintToggle = document.getElementById('hint-toggle');
+                const hintIndicator = document.getElementById('hint-toggle-indicator');
+                setupToggle(hintToggle, hintIndicator, state.hintsEnabled, (isEnabled) => {
+                    state.hintsEnabled = isEnabled;
+                    if (state.isGameActive && state.gameMode === 'image') {
+                        rerenderBoard(() => {});
+                    }
+                });
+            }
+            
+            // --- Category Progress & UI Update ---
+            const getCategoryProgress = async (category) => {
+                const progressData = await loadData(['puzzle-progress']);
+                const progress = progressData['puzzle-progress'] || {};
+                return progress[category] || 1;
             };
-            const updateCategoryLevels = async () => {
-                const progress = await getCategoryProgress();
-                document.querySelectorAll('.category-btn').forEach(btn => {
+            const saveCategoryProgress = async (category, level) => {
+                const progressData = await loadData(['puzzle-progress']);
+                const progress = progressData['puzzle-progress'] || {};
+                progress[category] = level;
+                await saveData('puzzle-progress', progress);
+            };
+
+            const updateCategoryLevelsUI = async () => {
+                 const progressData = await loadData(['puzzle-progress']);
+                 const progress = progressData['puzzle-progress'] || {};
+                 document.querySelectorAll('.category-btn').forEach(btn => {
                     const category = btn.dataset.category;
                     const level = progress[category] || 1;
-                    let badge = btn.querySelector('.level-badge');
-                    if (!badge) {
-                        badge = document.createElement('span');
-                        badge.className = 'level-badge';
-                        btn.appendChild(badge);
-                    }
-                    badge.textContent = `Ур. ${level}`;
-                });
+                    btn.querySelector('.level-display').textContent = `Ур. ${level}`;
+                 });
             };
 
-            const getClassicStats = async () => (await loadData(['puzzle-stats-classic']))['puzzle-stats-classic'] || {};
+            // --- Statistics ---
+            const getClassicStats = async () => {
+                const statsData = await loadData(['puzzle-stats-classic']);
+                return statsData['puzzle-stats-classic'] || {};
+            };
             const saveClassicStats = async () => {
+                const statsKey = `classic-${state.gridSize}x${state.gridSize}`;
                 const stats = await getClassicStats();
-                const key = `classic-${state.gridSize}x${state.gridSize}`;
-                const current = stats[key] || { bestTime: null, wins: 0 };
+                if (!stats[statsKey]) {
+                    stats[statsKey] = { bestTime: null, wins: 0 };
+                }
+                const current = stats[statsKey];
                 if (current.bestTime === null || state.timer < current.bestTime) current.bestTime = state.timer;
                 current.wins++;
-                stats[key] = current;
-                saveData('puzzle-stats-classic', stats);
+                await saveData('puzzle-stats-classic', stats);
             };
-
+            
             const renderStats = async () => {
                 const stats = await getClassicStats();
                 const container = document.getElementById('stats-container');
                 const modes = { 'classic-4x4': '4x4', 'classic-5x5': '5x5', 'classic-6x6': '6x6' };
-                let tableHTML = `<div class="overflow-x-auto"><table class="w-full text-left"><thead class="text-xs text-[var(--text-secondary)] uppercase"><tr><th scope="col" class="py-2 px-2">Размер</th><th scope="col" class="py-2 px-2 text-center">Побед</th><th scope="col" class="py-2 px-2 text-center">Лучшее время</th></tr></thead><tbody>`;
+                let tableHTML = `<div class="overflow-x-auto"><table class="w-full text-left"><thead><tr class="text-xs text-[var(--text-secondary)] uppercase"><th class="py-2 px-2">Размер</th><th class="py-2 px-2 text-center">Побед</th><th class="py-2 px-2 text-center">Лучшее время</th></tr></thead><tbody>`;
                 for (const key in modes) {
                     const data = stats[key] || { wins: 0, bestTime: null };
                     tableHTML += `<tr class="border-t border-[var(--bg-tertiary)]"><td class="py-3 px-2 font-bold">${modes[key]}</td><td class="py-3 px-2 text-center">${data.wins}</td><td class="py-3 px-2 text-center">${data.bestTime !== null ? formatTime(data.bestTime) : '-'}</td></tr>`;
                 }
-                container.innerHTML = tableHTML + `</tbody></table></div>`;
+                tableHTML += `</tbody></table></div>`;
+                container.innerHTML = tableHTML;
             };
-
-            // --- Other Games ---
-            const renderOtherGames = () => {
+            
+            // --- Other Games Modal ---
+            const populateOtherGames = () => {
                 const games = [
-                    { id: 51829672, name: 'Составь слова', icon: 'words.png' }, { id: 51830291, name: 'Филворды', icon: 'fillwords.png' },
-                    { id: 51829878, name: 'Сканворды', icon: 'scanwords.png' }, { id: 51830501, name: 'Судоку', icon: 'sudoku.png' },
-                    { id: 51830416, name: 'Пасьянс Паук', icon: 'spider.png' }, { id: 51830349, name: 'Пасьянс Косынка', icon: 'klondike.png' },
-                    { id: 51830177, name: 'Три в ряд', icon: 'match3.png' }, { id: 51830098, name: 'Поиск слов', icon: 'wordsearch.png' },
-                    { id: 51829986, name: 'Угадай слово', icon: 'guessword.png' }
+                    { id: 51999489, name: 'Hexa', icon: 'hexa.png' },
+                    { id: 51989408, name: 'Plumber', icon: 'plumber.png' },
+                    { id: 51987513, name: 'Link', icon: 'link.png' },
+                    { id: 51982006, name: 'Sort', icon: 'sort.png' },
+                    { id: 51978283, name: 'Find', icon: 'find.png' },
+                    { id: 51976694, name: '2048', icon: '2048.png' },
+                    { id: 51974911, name: 'Sudoku', icon: 'sudoku.png' },
+                    { id: 51973650, name: 'Mines', icon: 'mines.png' },
+                    { id: 51970228, name: 'Snake', icon: 'snake.png' }
                 ];
                 const container = document.getElementById('other-games-container');
-                container.innerHTML = games.map(game => `
-                    <div class="text-center">
-                        <button data-appid="${game.id}" class="other-game-btn w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center shadow-md">
-                            <img src="icons/${game.icon}" alt="${game.name}" class="w-16 h-16">
-                        </button>
-                        <p class="text-sm mt-2 font-medium">${game.name}</p>
-                    </div>
-                `).join('');
-                document.querySelectorAll('.other-game-btn').forEach(btn => {
-                    btn.addEventListener('click', () => vkBridge.send('VKWebAppOpenApp', { app_id: parseInt(btn.dataset.appid) }));
+                container.innerHTML = '';
+                games.forEach(game => {
+                    const gameEl = document.createElement('a');
+                    gameEl.href = `https://vk.com/app${game.id}`;
+                    gameEl.target = '_blank';
+                    gameEl.className = 'flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors';
+                    gameEl.innerHTML = `
+                        <img src="icons/${game.icon}" alt="${game.name}" class="w-16 h-16 rounded-xl shadow-md">
+                        <span class="text-xs font-medium">${game.name}</span>
+                    `;
+                    container.appendChild(gameEl);
                 });
+            };
+
+            // --- Misc UI Generation ---
+            const generateRulesGrid = () => {
+                const container = document.getElementById('rules-grid-example');
+                container.innerHTML = '';
+                for (let i = 1; i <= 15; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'rules-grid-cell bg-[var(--bg-secondary)] rounded-md flex items-center justify-center font-bold text-[var(--accent-primary)]';
+                    cell.textContent = i;
+                    container.appendChild(cell);
+                }
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'rules-grid-cell rounded-md';
+                container.appendChild(emptyCell);
             };
             
             // --- Initialization ---
             const initializeApp = async () => {
-                const storedData = await loadData(['theme', 'musicEnabled', 'sfxEnabled', 'levelsCompleted']);
+                const storedData = await loadData(['theme', 'musicEnabled', 'sfxEnabled', 'levelsCompletedSinceAd']);
                 
-                const html = document.documentElement;
-                const isDark = storedData.theme !== false;
-                html.classList.toggle('dark', isDark);
-                html.classList.toggle('light', !isDark);
+                state.musicEnabled = storedData.musicEnabled !== null ? storedData.musicEnabled : true;
+                state.sfxEnabled = storedData.sfxEnabled !== null ? storedData.sfxEnabled : true;
+                state.levelsCompletedSinceAd = storedData.levelsCompletedSinceAd || 0;
 
-                state.musicEnabled = storedData.musicEnabled !== false;
-                state.sfxEnabled = storedData.sfxEnabled !== false;
-                state.levelsCompletedSinceAd = storedData.levelsCompleted || 0;
+                const isDark = storedData.theme !== null ? storedData.theme : false;
+                document.documentElement.classList.toggle('dark', isDark);
+                document.documentElement.classList.toggle('light', !isDark);
 
-                const setupPersistentToggle = (toggleId, indicatorId, storageKey, initialValue, onToggle) => {
-                    const toggle = document.getElementById(toggleId);
-                    const indicator = document.getElementById(indicatorId);
-                    setupToggle(toggle, indicator, initialValue, isEnabled => {
-                        state[storageKey] = isEnabled;
-                        saveData(storageKey, isEnabled);
-                        onToggle(isEnabled);
-                    });
-                };
+                state.isDataLoaded = true;
+                
+                setupAllToggles();
+                generateRulesGrid();
+                populateOtherGames();
 
-                setupPersistentToggle('theme-toggle', 'theme-toggle-indicator', 'theme', isDark, isDark => {
-                    html.classList.toggle('dark', isDark);
-                    html.classList.toggle('light', !isDark);
+                vkBridge.subscribe(({ detail: { type, data }}) => {
+                    if (type === 'VKWebAppViewLeave') {
+                        bgMusic.pause();
+                    }
+                    if (type === 'VKWebAppViewRestore') {
+                        if (state.musicEnabled) {
+                            bgMusic.play().catch(e => console.log("Music play failed on restore"));
+                        }
+                    }
                 });
-                setupPersistentToggle('music-toggle', 'music-toggle-indicator', 'musicEnabled', state.musicEnabled, isEnabled => isEnabled ? bgMusic.play().catch(e=>e) : bgMusic.pause());
-                setupPersistentToggle('sfx-toggle', 'sfx-toggle-indicator', 'sfxEnabled', state.sfxEnabled, isEnabled => {});
-                
-                const hintToggle = document.getElementById('hint-toggle');
-                const hintIndicator = document.getElementById('hint-toggle-indicator');
-                setupToggle(hintToggle, hintIndicator, state.hintsEnabled, isEnabled => {
-                    state.hintsEnabled = isEnabled;
-                    if (state.isGameActive && state.gameMode === 'image') rerenderBoard();
-                });
-
-                if (state.musicEnabled) bgMusic.play().catch(e=>e);
-                
-                vkBridge.subscribe(e => {
-                    if (e.detail.type === 'VKWebAppViewLeave') bgMusic.pause();
-                    if (e.detail.type === 'VKWebAppViewRestore' && state.musicEnabled) bgMusic.play().catch(e=>e);
-                });
-
-                vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' }).catch(error => console.log(error));
-                    
-                const container = document.getElementById('rules-grid-example');
-                for (let i = 1; i <= 15; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'bg-[var(--bg-secondary)] rounded-md flex items-center justify-center font-bold text-[var(--accent-primary)]';
-                    cell.textContent = i;
-                    container.appendChild(cell);
-                }
-                
-                renderOtherGames();
-                setupListeners();
             };
-
+            
             initializeApp();
+
+            const resizeObserver = new ResizeObserver(() => {
+                if (state.currentScreen === 'game' && state.isGameActive) {
+                    rerenderBoard(() => {});
+                }
+            });
+            resizeObserver.observe(document.getElementById('puzzle-board-container'));
+
         });
     </script>
 </body>
 </html>
-
