@@ -460,6 +460,7 @@
                 isPaused: false,
                 isGameActive: false,
                 isRendering: false,
+                theme: false, // Default theme state
                 sfxEnabled: true,
                 musicEnabled: true,
                 hintsEnabled: false,
@@ -1016,7 +1017,7 @@
                 const applyState = (enabled) => {
                     // Corrected transform value for w-11 container and w-4 indicator with p-1 on container
                     indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0rem)';
-                    // FIX: Use specific contrasting colors for off-state instead of theme variables to avoid merging.
+                    // Use specific contrasting colors for off-state to avoid merging.
                     if (enabled) {
                         toggleEl.classList.add('bg-[var(--accent-primary)]');
                         toggleEl.classList.remove('bg-gray-300', 'dark:bg-gray-600');
@@ -1122,30 +1123,30 @@
                 container.innerHTML = tableHTML;
             };
             
-            // --- Other Games Modal ---
-            // FIX: Renamed function and used correct game data as per user's example.
+            // --- Other Games Modal (FIXED) ---
             const renderOtherGames = () => {
                 const games = [
-                    { id: 51999489, name: 'Tetris', icon: 'icon1.png' },
-                    { id: 51989408, name: 'Bubble Shooter', icon: 'icon2.png' },
-                    { id: 51987513, name: 'Link', icon: 'icon3.png' },
-                    { id: 51982006, name: 'Sort', icon: 'icon4.png' },
-                    { id: 51978283, name: 'Find', icon: 'icon5.png' },
-                    { id: 51976694, name: '2048', icon: 'icon6.png' },
-                    { id: 51974911, name: 'Sudoku', icon: 'icon7.png' },
-                    { id: 51973650, name: 'Mines', icon: 'icon8.png' },
-                    { id: 51970228, name: 'Snake', icon: 'icon9.png' }
+                    { id: 54051411, name: 'Bubble Shooter', icon: 'icon1.png' },
+                    { id: 54051413, name: 'Тетрис', icon: 'icon2.png' },
+                    { id: 53962513, name: 'Tower Blocks', icon: 'icon3.png' },
+                    { id: 53936296, name: 'Блок Про', icon: 'icon4.png' },
+                    { id: 53867134, name: 'Филворды', icon: 'icon5.png' },
+                    { id: 53861990, name: 'Словли', icon: 'icon6.png' },
+                    { id: 54023580, name: 'Brick Balls', icon: 'icon7.png' },
+                    { id: 53965380, name: '2048', icon: 'icon8.png' },
+                    { id: 53970659, name: 'Math Matrix', icon: 'icon9.png' }
                 ];
                 const container = document.getElementById('other-games-container');
                 container.innerHTML = '';
                 games.forEach(game => {
-                    const gameEl = document.createElement('a');
-                    gameEl.href = `https://vk.com/app${game.id}`;
-                    gameEl.target = '_blank';
-                    gameEl.className = 'flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors';
+                    const gameEl = document.createElement('div');
+                    gameEl.className = 'flex flex-col items-center gap-2 p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer group';
+                    gameEl.onclick = () => vkBridge.send('VKWebAppOpenApp', { app_id: game.id });
                     gameEl.innerHTML = `
-                        <img src="icons/${game.icon}" alt="${game.name}" class="w-16 h-16 rounded-xl shadow-md">
-                        <span class="text-xs font-medium">${game.name}</span>
+                        <div class="w-16 h-16 rounded-xl shadow-md overflow-hidden group-hover:scale-105 transition-transform">
+                             <img src="icons/${game.icon}" alt="${game.name}" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xs font-medium text-center">${game.name}</span>
                     `;
                     container.appendChild(gameEl);
                 });
@@ -1166,28 +1167,27 @@
                 container.appendChild(emptyCell);
             };
             
-            // --- Initialization ---
+            // --- Initialization (FIXED) ---
             const initializeApp = async () => {
                 const storedData = await loadData(['theme', 'musicEnabled', 'sfxEnabled', 'levelsCompletedSinceAd']);
                 
                 state.musicEnabled = storedData.musicEnabled !== null ? storedData.musicEnabled : true;
                 state.sfxEnabled = storedData.sfxEnabled !== null ? storedData.sfxEnabled : true;
                 state.levelsCompletedSinceAd = storedData.levelsCompletedSinceAd || 0;
+                // FIX: Assign loaded theme to the global state object BEFORE setting up toggles
+                state.theme = storedData.theme !== null ? storedData.theme : false;
 
-                const isDark = storedData.theme !== null ? storedData.theme : false;
-                document.documentElement.classList.toggle('dark', isDark);
-                document.documentElement.classList.toggle('light', !isDark);
+                // Apply the theme class to the document
+                document.documentElement.classList.toggle('dark', state.theme);
+                document.documentElement.classList.toggle('light', !state.theme);
 
                 state.isDataLoaded = true;
                 
+                // Now setupAllToggles will read the correct initial theme from the state
                 setupAllToggles();
                 generateRulesGrid();
                 renderOtherGames();
 
-                // This is the correct VK Bridge method to handle app visibility changes.
-                // It ensures music (and potentially other game processes) pauses when the
-                // user switches to another app or screen and resumes upon return.
-                // FIX: Changed VKWebAppViewLeave to VKWebAppViewHide as requested.
                 vkBridge.subscribe(({ detail: { type, data }}) => {
                     if (type === 'VKWebAppViewHide') {
                         bgMusic.pause();
@@ -1213,5 +1213,3 @@
     </script>
 </body>
 </html>
-
-
