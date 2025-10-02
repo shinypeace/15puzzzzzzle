@@ -154,11 +154,9 @@
             border-radius: 12px;
             touch-action: none;
             position: relative;
-            /* ADDED TRANSITION */
             transition: padding 0.8s ease-in-out;
         }
 
-        /* ADDED WIN STATE FOR BOARD */
         #puzzle-board.puzzle-won {
             padding: 0;
             border-radius: 8px;
@@ -171,19 +169,23 @@
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            border-radius: 8px; /* Slightly smaller radius */
+            border-radius: 8px; 
             cursor: pointer;
             user-select: none;
             position: absolute;
             box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
-            /* UPDATED TRANSITION FOR WIN ANIMATION */
-            transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+            transition: top 0.2s cubic-bezier(0.25, 1, 0.5, 1), 
+                        left 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: top, left;
+        }
+
+        #puzzle-board.puzzle-won .tile {
+             transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                         left 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                         border-radius 0.8s ease-in-out, 
                         box-shadow 0.8s ease-in-out, 
                         width 0.8s ease-in-out, 
                         height 0.8s ease-in-out;
-            will-change: top, left, border-radius, box-shadow, width, height;
         }
         
         .tile.empty {
@@ -192,7 +194,6 @@
             pointer-events: none;
         }
         
-        /* ADDED WIN STATE FOR TILES */
         #puzzle-board.puzzle-won .tile, 
         #puzzle-board.puzzle-won .tile canvas {
             border-radius: 0;
@@ -214,6 +215,7 @@
             text-shadow: 0 0 3px black, 0 0 3px black;
             opacity: 0.8;
             pointer-events: none;
+            transition: opacity 0.5s;
         }
         
         .rules-grid-cell {
@@ -586,8 +588,13 @@
                 state.customImageSrc = options.imageSrc || null;
                 state.gridSize = options.size || 4;
                 
-                // Make sure board doesn't have win animation class from previous game
                 puzzleBoard.classList.remove('puzzle-won');
+                
+                // Restore default tile transition
+                puzzleBoard.querySelectorAll('.tile').forEach(tile => {
+                    tile.style.transition = 'top 0.2s cubic-bezier(0.25, 1, 0.5, 1), left 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
+                });
+
 
                 gameFooter.classList.toggle('opacity-0', mode !== 'image');
                 
@@ -780,7 +787,6 @@
                 state.emptyTile = { row: row1, col: col1 };
                 updateMoves();
                 if (checkWin()) {
-                    // MODIFIED: Start win sequence instead of ending game directly
                     initiateWinSequence();
                 }
             };
@@ -823,7 +829,6 @@
 
             // --- REFACTORED WIN LOGIC ---
 
-            // Step 1: Called on win. Handles animation.
             const initiateWinSequence = () => {
                 state.isGameActive = false;
                 clearInterval(state.timerInterval);
@@ -831,6 +836,9 @@
 
                 if (state.gameMode === 'image' && state.customImageSrc) {
                     const boardEl = document.getElementById('puzzle-board');
+                    // Hide hint numbers
+                    boardEl.querySelectorAll('.hint-number').forEach(h => h.style.opacity = '0');
+
                     const TILE_COUNT = state.gridSize * state.gridSize;
                     const emptyTileEl = boardEl.querySelector('.tile.empty');
                     
@@ -848,7 +856,8 @@
                         emptyTileEl.classList.remove('empty');
                         
                         const boardSize = boardEl.clientWidth;
-                        const newTileSize = boardSize / state.gridSize;
+                        // Use Math.ceil to prevent floating point gaps.
+                        const newTileSize = Math.ceil(boardSize / state.gridSize);
 
                         boardEl.querySelectorAll('.tile').forEach(tile => {
                             const row = parseInt(tile.dataset.row, 10);
@@ -861,7 +870,7 @@
                         });
                         
                         boardEl.classList.add('puzzle-won');
-                        setTimeout(finalizeWin, 1000); // Wait for animation
+                        setTimeout(finalizeWin, 1200); // Increased delay for smoother look
                     };
                     img.onerror = () => {
                         console.error("Image for win animation failed to load.");
@@ -872,9 +881,20 @@
                     finalizeWin(); // No animation for classic mode
                 }
             };
+            
+            // This function now only handles showing the modal.
+            const showWinModal = () => {
+                const isCategoryMode = state.gameMode === 'image' && state.category;
+                document.getElementById('win-time').textContent = formatTime(state.timer);
+                document.getElementById('win-moves').textContent = state.moves;
+                document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
+                document.getElementById('restart-game-btn-win').classList.toggle('hidden', isCategoryMode);
+                document.getElementById('win-subtitle').textContent = isCategoryMode ? `Уровень ${state.currentLevel} пройден!` : `Отличная работа!`;
+                showModal('win');
+            }
 
-            // Step 2: Handles stats, ads, and shows the win modal.
-            const finalizeWin = async () => {
+            // This async function handles background tasks without blocking the UI.
+            const handlePostWinTasks = async () => {
                 try {
                     const isCategoryMode = state.gameMode === 'image' && state.category;
 
@@ -888,28 +908,21 @@
                     }
 
                     if (isCategoryMode && state.levelsCompletedSinceAd >= 2) {
-                        try {
-                           await vkBridge.send('VKWebAppShowInterstitial');
-                           state.levelsCompletedSinceAd = 0;
-                           await saveData('levelsCompletedSinceAd', 0);
-                        } catch (e) {
-                            console.log("Interstitial Ad error:", e);
-                        }
+                        await vkBridge.send('VKWebAppShowInterstitial').catch(e => console.log("Interstitial Ad error:", e));
+                        state.levelsCompletedSinceAd = 0;
+                        await saveData('levelsCompletedSinceAd', 0);
                     }
                 } catch (error) {
                     console.error("Error saving game progress:", error);
-                } finally {
-                    // This block ALWAYS runs, ensuring the modal appears and fixing the bug.
-                    const isCategoryMode = state.gameMode === 'image' && state.category;
-                    document.getElementById('win-time').textContent = formatTime(state.timer);
-                    document.getElementById('win-moves').textContent = state.moves;
-                    document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
-                    document.getElementById('restart-game-btn-win').classList.toggle('hidden', isCategoryMode);
-                    document.getElementById('win-subtitle').textContent = isCategoryMode ? `Уровень ${state.currentLevel} пройден!` : `Отличная работа!`;
-                    
-                    showModal('win');
                 }
             };
+            
+            // This is the final step, ensures modal shows up first.
+            const finalizeWin = () => {
+                showWinModal();
+                handlePostWinTasks(); // Run background tasks
+            };
+
 
             const startTimer = () => {
                 clearInterval(state.timerInterval);
