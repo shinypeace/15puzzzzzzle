@@ -154,6 +154,14 @@
             border-radius: 12px;
             touch-action: none;
             position: relative;
+            /* ADDED TRANSITION */
+            transition: padding 0.8s ease-in-out;
+        }
+
+        /* ADDED WIN STATE FOR BOARD */
+        #puzzle-board.puzzle-won {
+            padding: 0;
+            border-radius: 8px;
         }
 
         .tile {
@@ -168,18 +176,34 @@
             user-select: none;
             position: absolute;
             box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
-            transition: top 0.2s cubic-bezier(0.25, 1, 0.5, 1), left 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            will-change: top, left;
+            /* UPDATED TRANSITION FOR WIN ANIMATION */
+            transition: top 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                        left 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                        border-radius 0.8s ease-in-out, 
+                        box-shadow 0.8s ease-in-out, 
+                        width 0.8s ease-in-out, 
+                        height 0.8s ease-in-out;
+            will-change: top, left, border-radius, box-shadow, width, height;
         }
+        
         .tile.empty {
             background-color: transparent;
             box-shadow: none;
             pointer-events: none;
         }
+        
+        /* ADDED WIN STATE FOR TILES */
+        #puzzle-board.puzzle-won .tile, 
+        #puzzle-board.puzzle-won .tile canvas {
+            border-radius: 0;
+            box-shadow: none;
+        }
+
         .tile canvas {
             width: 100%;
             height: 100%;
             border-radius: 8px;
+            transition: border-radius 0.8s ease-in-out;
         }
         .tile .hint-number {
             position: absolute;
@@ -460,7 +484,7 @@
                 isPaused: false,
                 isGameActive: false,
                 isRendering: false,
-                theme: false, // Default theme state
+                theme: false, 
                 sfxEnabled: true,
                 musicEnabled: true,
                 hintsEnabled: false,
@@ -476,7 +500,7 @@
             };
 
             const BOARD_PADDING = 4;
-            const TILE_GAP = 4; // Reduced gap
+            const TILE_GAP = 4;
 
             // --- Sound Engine ---
             let sfxTap, sfxSlide, sfxWin;
@@ -562,6 +586,9 @@
                 state.customImageSrc = options.imageSrc || null;
                 state.gridSize = options.size || 4;
                 
+                // Make sure board doesn't have win animation class from previous game
+                puzzleBoard.classList.remove('puzzle-won');
+
                 gameFooter.classList.toggle('opacity-0', mode !== 'image');
                 
                 updateGameHeader();
@@ -753,7 +780,8 @@
                 state.emptyTile = { row: row1, col: col1 };
                 updateMoves();
                 if (checkWin()) {
-                    endGame(true);
+                    // MODIFIED: Start win sequence instead of ending game directly
+                    initiateWinSequence();
                 }
             };
 
@@ -793,33 +821,86 @@
                 startTimer();
             };
 
-            const endGame = async (isWin) => {
+            // --- REFACTORED WIN LOGIC ---
+
+            // Step 1: Called on win. Handles animation.
+            const initiateWinSequence = () => {
                 state.isGameActive = false;
                 clearInterval(state.timerInterval);
-                if (isWin) {
-                    playSound('win');
+                playSound('win');
+
+                if (state.gameMode === 'image' && state.customImageSrc) {
+                    const boardEl = document.getElementById('puzzle-board');
+                    const TILE_COUNT = state.gridSize * state.gridSize;
+                    const emptyTileEl = boardEl.querySelector('.tile.empty');
                     
+                    const img = new Image();
+                    img.onload = () => {
+                        const pieceSize = img.width / state.gridSize;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = pieceSize;
+                        canvas.height = pieceSize;
+                        const ctx = canvas.getContext('2d');
+                        const sX = ((TILE_COUNT - 1) % state.gridSize) * pieceSize;
+                        const sY = Math.floor((TILE_COUNT - 1) / state.gridSize) * pieceSize;
+                        ctx.drawImage(img, sX, sY, pieceSize, pieceSize, 0, 0, pieceSize, pieceSize);
+                        emptyTileEl.appendChild(canvas);
+                        emptyTileEl.classList.remove('empty');
+                        
+                        const boardSize = boardEl.clientWidth;
+                        const newTileSize = boardSize / state.gridSize;
+
+                        boardEl.querySelectorAll('.tile').forEach(tile => {
+                            const row = parseInt(tile.dataset.row, 10);
+                            const col = parseInt(tile.dataset.col, 10);
+                            
+                            tile.style.top = `${row * newTileSize}px`;
+                            tile.style.left = `${col * newTileSize}px`;
+                            tile.style.width = `${newTileSize}px`;
+                            tile.style.height = `${newTileSize}px`;
+                        });
+                        
+                        boardEl.classList.add('puzzle-won');
+                        setTimeout(finalizeWin, 1000); // Wait for animation
+                    };
+                    img.onerror = () => {
+                        console.error("Image for win animation failed to load.");
+                        finalizeWin(); // Skip animation if image fails
+                    };
+                    img.src = state.customImageSrc;
+                } else {
+                    finalizeWin(); // No animation for classic mode
+                }
+            };
+
+            // Step 2: Handles stats, ads, and shows the win modal.
+            const finalizeWin = async () => {
+                try {
                     const isCategoryMode = state.gameMode === 'image' && state.category;
 
                     if (isCategoryMode) {
                         state.levelsCompletedSinceAd++;
-                        saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
-                        saveCategoryProgress(state.category, state.currentLevel + 1);
+                        await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
+                        await saveCategoryProgress(state.category, state.currentLevel + 1);
                     }
                     if (state.gameMode === 'classic') {
-                        saveClassicStats();
+                        await saveClassicStats();
                     }
 
                     if (isCategoryMode && state.levelsCompletedSinceAd >= 2) {
                         try {
                            await vkBridge.send('VKWebAppShowInterstitial');
                            state.levelsCompletedSinceAd = 0;
-                           saveData('levelsCompletedSinceAd', 0);
+                           await saveData('levelsCompletedSinceAd', 0);
                         } catch (e) {
                             console.log("Interstitial Ad error:", e);
                         }
                     }
-                    
+                } catch (error) {
+                    console.error("Error saving game progress:", error);
+                } finally {
+                    // This block ALWAYS runs, ensuring the modal appears and fixing the bug.
+                    const isCategoryMode = state.gameMode === 'image' && state.category;
                     document.getElementById('win-time').textContent = formatTime(state.timer);
                     document.getElementById('win-moves').textContent = state.moves;
                     document.getElementById('next-level-btn-win').classList.toggle('hidden', !isCategoryMode);
@@ -1015,9 +1096,7 @@
             const setupToggle = (toggleEl, indicatorEl, initialValue, onToggle) => {
                 let isEnabled = initialValue;
                 const applyState = (enabled) => {
-                    // Corrected transform value for w-11 container and w-4 indicator with p-1 on container
                     indicatorEl.style.transform = enabled ? 'translateX(1.25rem)' : 'translateX(0rem)';
-                    // Use specific contrasting colors for off-state to avoid merging.
                     if (enabled) {
                         toggleEl.classList.add('bg-[var(--accent-primary)]');
                         toggleEl.classList.remove('bg-gray-300', 'dark:bg-gray-600');
@@ -1123,7 +1202,7 @@
                 container.innerHTML = tableHTML;
             };
             
-            // --- Other Games Modal (FIXED) ---
+            // --- Other Games Modal ---
             const renderOtherGames = () => {
                 const games = [
                     { id: 54051411, name: 'Bubble Shooter', icon: 'icon1.png' },
@@ -1134,7 +1213,7 @@
                     { id: 53861990, name: 'Словли', icon: 'icon6.png' },
                     { id: 54023580, name: 'Brick Balls', icon: 'icon7.png' },
                     { id: 53965380, name: '2048', icon: 'icon8.png' },
-                    { id: 54143992, name: 'Sort Puzzle', icon: 'icon9.png' }
+                    { id: 53970659, name: 'Math Matrix', icon: 'icon9.png' }
                 ];
                 const container = document.getElementById('other-games-container');
                 container.innerHTML = '';
@@ -1167,23 +1246,20 @@
                 container.appendChild(emptyCell);
             };
             
-            // --- Initialization (FIXED) ---
+            // --- Initialization ---
             const initializeApp = async () => {
                 const storedData = await loadData(['theme', 'musicEnabled', 'sfxEnabled', 'levelsCompletedSinceAd']);
                 
                 state.musicEnabled = storedData.musicEnabled !== null ? storedData.musicEnabled : true;
                 state.sfxEnabled = storedData.sfxEnabled !== null ? storedData.sfxEnabled : true;
                 state.levelsCompletedSinceAd = storedData.levelsCompletedSinceAd || 0;
-                // FIX: Assign loaded theme to the global state object BEFORE setting up toggles
                 state.theme = storedData.theme !== null ? storedData.theme : false;
 
-                // Apply the theme class to the document
                 document.documentElement.classList.toggle('dark', state.theme);
                 document.documentElement.classList.toggle('light', !state.theme);
 
                 state.isDataLoaded = true;
                 
-                // Now setupAllToggles will read the correct initial theme from the state
                 setupAllToggles();
                 generateRulesGrid();
                 renderOtherGames();
@@ -1213,3 +1289,4 @@
     </script>
 </body>
 </html>
+
