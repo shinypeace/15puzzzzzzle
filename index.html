@@ -43,6 +43,12 @@
             --modal-backdrop: rgba(0, 0, 0, 0.7);
         }
 
+        /* MODIFIED: Set full height for html and body to fix PC/mobile layout bugs */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
@@ -57,7 +63,7 @@
         .game-container {
             width: 100%;
             max-width: 480px;
-            /* MODIFIED: Height is now set by JavaScript for cross-platform compatibility */
+            height: 100%; /* MODIFIED: Using pure CSS for robust height calculation */
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -244,7 +250,7 @@
         }
     </style>
 </head>
-<body class="overflow-hidden" oncontextmenu="return false;">
+<body oncontextmenu="return false;">
     <audio id="bg-music" src="music.mp3" loop></audio>
 
     <div id="game-container" class="game-container">
@@ -451,15 +457,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- PC Height Fix & UI Polish ---
-            const gameContainer = document.getElementById('game-container');
-            const setContainerHeight = () => {
-                // This robustly sets the container height to the actual visible window height
-                gameContainer.style.height = `${window.innerHeight}px`;
-            };
-            setContainerHeight();
-            window.addEventListener('resize', setContainerHeight);
-
+            // --- JS height fix removed in favor of a more robust pure CSS solution ---
 
             // --- VK Bridge Initialization ---
             vkBridge.send('VKWebAppInit');
@@ -1317,5 +1315,6 @@
     </script>
 </body>
 </html>
+
 
 
