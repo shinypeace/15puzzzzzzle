@@ -219,7 +219,7 @@
         }
         
         .rules-grid-cell {
-            font-size: 1rem;
+            font-size: 0.875rem;
         }
         .category-btn .level-display {
             position: absolute;
@@ -345,11 +345,19 @@
         <div id="rules-modal" class="modal hidden absolute inset-0 z-50 flex items-center justify-center p-4">
             <div class="modal-content w-full max-w-sm p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-4">Правила игры</h2>
-                <p class="text-[var(--text-secondary)] mb-4 text-center">
-                    Цель игры — упорядочить плитки по номерам. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
-                </p>
-                <div id="rules-grid-example" class="aspect-square bg-[var(--bg-tertiary)] rounded-lg p-2 grid grid-cols-4 gap-1"></div>
-                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-6 font-semibold">Понятно</button>
+                <div class="space-y-3 text-center text-sm text-[var(--text-secondary)]">
+                    <p>
+                        Цель игры — упорядочить плитки по номерам или собрать картинку. Нажимайте на плитки рядом с пустым местом, чтобы переместить их.
+                    </p>
+                    <p>
+                        В режиме <strong>"Категории"</strong> сложность увеличивается:
+                        <br>Уровни 1-20 (4x4), 21-40 (5x5), 41-60 (6x6).
+                    </p>
+                </div>
+                <div class="w-48 mx-auto my-4">
+                    <div id="rules-grid-example" class="aspect-square bg-[var(--bg-tertiary)] rounded-lg p-1 grid grid-cols-4 gap-0.5"></div>
+                </div>
+                <button class="close-modal-btn btn btn-primary w-full py-3 rounded-lg mt-4 font-semibold">Понятно</button>
             </div>
         </div>
         
@@ -836,7 +844,6 @@
 
                 if (state.gameMode === 'image' && state.customImageSrc) {
                     const boardEl = document.getElementById('puzzle-board');
-                    // Hide hint numbers
                     boardEl.querySelectorAll('.hint-number').forEach(h => h.style.opacity = '0');
 
                     const TILE_COUNT = state.gridSize * state.gridSize;
@@ -856,8 +863,7 @@
                         emptyTileEl.classList.remove('empty');
                         
                         const boardSize = boardEl.clientWidth;
-                        // Use Math.ceil to prevent floating point gaps.
-                        const newTileSize = Math.ceil(boardSize / state.gridSize);
+                        const newTileSize = boardSize / state.gridSize;
 
                         boardEl.querySelectorAll('.tile').forEach(tile => {
                             const row = parseInt(tile.dataset.row, 10);
@@ -870,19 +876,18 @@
                         });
                         
                         boardEl.classList.add('puzzle-won');
-                        setTimeout(finalizeWin, 1200); // Increased delay for smoother look
+                        setTimeout(finalizeWin, 1200); 
                     };
                     img.onerror = () => {
                         console.error("Image for win animation failed to load.");
-                        finalizeWin(); // Skip animation if image fails
+                        finalizeWin();
                     };
                     img.src = state.customImageSrc;
                 } else {
-                    finalizeWin(); // No animation for classic mode
+                    finalizeWin();
                 }
             };
             
-            // This function now only handles showing the modal.
             const showWinModal = () => {
                 const isCategoryMode = state.gameMode === 'image' && state.category;
                 document.getElementById('win-time').textContent = formatTime(state.timer);
@@ -893,7 +898,6 @@
                 showModal('win');
             }
 
-            // This async function handles background tasks without blocking the UI.
             const handlePostWinTasks = async () => {
                 try {
                     const isCategoryMode = state.gameMode === 'image' && state.category;
@@ -917,10 +921,9 @@
                 }
             };
             
-            // This is the final step, ensures modal shows up first.
             const finalizeWin = () => {
                 showWinModal();
-                handlePostWinTasks(); // Run background tasks
+                handlePostWinTasks();
             };
 
 
@@ -1250,7 +1253,7 @@
                 container.innerHTML = '';
                 for (let i = 1; i <= 15; i++) {
                     const cell = document.createElement('div');
-                    cell.className = 'rules-grid-cell bg-[var(--bg-secondary)] rounded-md flex items-center justify-center font-bold text-[var(--accent-primary)]';
+                    cell.className = 'rules-grid-cell bg-[var(--bg-secondary)] rounded-sm flex items-center justify-center font-bold text-[var(--accent-primary)]';
                     cell.textContent = i;
                     container.appendChild(cell);
                 }
