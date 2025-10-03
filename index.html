@@ -49,13 +49,15 @@
             color: var(--text-primary);
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
+            /* ADDED: Disable text selection */
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         .game-container {
             width: 100%;
             max-width: 480px;
-            height: 100vh;
-            height: -webkit-fill-available;
+            /* MODIFIED: Height is now set by JavaScript for cross-platform compatibility */
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -242,7 +244,7 @@
         }
     </style>
 </head>
-<body class="overflow-hidden">
+<body class="overflow-hidden" oncontextmenu="return false;">
     <audio id="bg-music" src="music.mp3" loop></audio>
 
     <div id="game-container" class="game-container">
@@ -449,6 +451,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- PC Height Fix & UI Polish ---
+            const gameContainer = document.getElementById('game-container');
+            const setContainerHeight = () => {
+                // This robustly sets the container height to the actual visible window height
+                gameContainer.style.height = `${window.innerHeight}px`;
+            };
+            setContainerHeight();
+            window.addEventListener('resize', setContainerHeight);
+
+
             // --- VK Bridge Initialization ---
             vkBridge.send('VKWebAppInit');
             vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' })
@@ -1305,4 +1317,5 @@
     </script>
 </body>
 </html>
+
 
