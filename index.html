@@ -320,10 +320,15 @@
 
         <!-- ===== Game Screen ===== -->
         <div id="game-screen" class="screen hidden flex flex-col justify-between p-4 sm:p-6">
-            <header class="flex justify-between items-center w-full mb-4">
+            <header class="relative flex justify-between items-center w-full mb-4">
                 <button id="pause-btn" class="btn btn-secondary p-3 rounded-full">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </button>
+                
+                <div id="game-level-display" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none hidden">
+                    <span class="text-sm font-bold text-[var(--text-secondary)] bg-[var(--bg-tertiary)] px-3 py-1 rounded-full"></span>
+                </div>
+
                 <div class="flex gap-6 text-center">
                     <div>
                         <div class="text-sm font-medium text-[var(--text-secondary)]">Время</div>
@@ -491,6 +496,7 @@
             const imagePreviewContainer = document.getElementById('image-preview-container');
             const gameFooter = document.getElementById('game-footer');
             const bgMusic = document.getElementById('bg-music');
+            const gameLevelDisplay = document.getElementById('game-level-display');
 
             // --- Game State ---
             let state = {
@@ -610,6 +616,13 @@
                 state.customImageSrc = options.imageSrc || null;
                 state.gridSize = options.size || 4;
                 
+                if (state.gameMode === 'image' && state.category) {
+                    gameLevelDisplay.querySelector('span').textContent = `Уровень ${state.currentLevel}`;
+                    gameLevelDisplay.classList.remove('hidden');
+                } else {
+                    gameLevelDisplay.classList.add('hidden');
+                }
+
                 puzzleBoard.classList.remove('puzzle-won');
                 
                 // Restore default tile transition
@@ -1319,6 +1332,7 @@
     </script>
 </body>
 </html>
+
 
 
 
