@@ -11,6 +11,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ADDED: Universal box-sizing for predictable layouts, fixing the scrollbar issue. */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         :root {
             --bg-primary: #f3f4f6;
             --bg-secondary: #ffffff;
@@ -1315,6 +1319,7 @@
     </script>
 </body>
 </html>
+
 
 
 
