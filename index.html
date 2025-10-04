@@ -935,9 +935,10 @@
                 showModal('win');
             }
 
+            // --- ИСПРАВЛЕНИЕ ЛОГИКИ РЕКЛАМЫ ---
             const handlePostWinTasks = async () => {
                 try {
-                    // --- Сохранение прогресса для конкретного режима ---
+                    // Сохранение прогресса для конкретного режима
                     if (state.gameMode === 'image' && state.category) {
                         await saveCategoryProgress(state.category, state.currentLevel + 1);
                     }
@@ -945,16 +946,17 @@
                         await saveClassicStats();
                     }
                     
-                    // --- Универсальная логика рекламы ---
+                    // Универсальная логика рекламы
                     // Увеличиваем счетчик после каждой победы
                     state.levelsCompletedSinceAd++;
                     await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
 
-                    // Показываем рекламу после каждых 2 пройденных уровней, независимо от режима
+                    // Показываем рекламу после каждых 2 пройденных уровней
                     if (state.levelsCompletedSinceAd >= 2) {
-                        // Пытаемся показать рекламу
-                        await vkBridge.send('VKWebAppShowInterstitial').catch(e => console.log("Interstitial Ad error:", e));
-                        // Сбрасываем счетчик независимо от того, была ли показана реклама
+                        // ИСПРАВЛЕНО: Использован правильный метод 'VKWebAppShowInterstitialAd'
+                        await vkBridge.send('VKWebAppShowInterstitialAd').catch(e => console.log("Interstitial Ad error:", e));
+                        
+                        // Сбрасываем счетчик
                         state.levelsCompletedSinceAd = 0;
                         await saveData('levelsCompletedSinceAd', 0);
                     }
@@ -1310,7 +1312,6 @@
                 
                 state.musicEnabled = storedData.musicEnabled !== null ? storedData.musicEnabled : true;
                 state.sfxEnabled = storedData.sfxEnabled !== null ? storedData.sfxEnabled : true;
-                // ADDED: Load the ad counter from storage on startup
                 state.levelsCompletedSinceAd = storedData.levelsCompletedSinceAd || 0;
                 state.theme = storedData.theme !== null ? storedData.theme : false;
 
@@ -1348,11 +1349,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
