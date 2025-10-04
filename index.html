@@ -527,6 +527,7 @@
                 sfxEnabled: true,
                 musicEnabled: true,
                 hintsEnabled: false,
+                // ADDED: Counter for interstitial ads
                 levelsCompletedSinceAd: 0,
                 isDataLoaded: false,
             };
@@ -936,19 +937,24 @@
 
             const handlePostWinTasks = async () => {
                 try {
-                    const isCategoryMode = state.gameMode === 'image' && state.category;
-
-                    if (isCategoryMode) {
-                        state.levelsCompletedSinceAd++;
-                        await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
+                    // --- Сохранение прогресса для конкретного режима ---
+                    if (state.gameMode === 'image' && state.category) {
                         await saveCategoryProgress(state.category, state.currentLevel + 1);
                     }
                     if (state.gameMode === 'classic') {
                         await saveClassicStats();
                     }
+                    
+                    // --- Универсальная логика рекламы ---
+                    // Увеличиваем счетчик после каждой победы
+                    state.levelsCompletedSinceAd++;
+                    await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
 
-                    if (isCategoryMode && state.levelsCompletedSinceAd >= 2) {
+                    // Показываем рекламу после каждых 2 пройденных уровней, независимо от режима
+                    if (state.levelsCompletedSinceAd >= 2) {
+                        // Пытаемся показать рекламу
                         await vkBridge.send('VKWebAppShowInterstitial').catch(e => console.log("Interstitial Ad error:", e));
+                        // Сбрасываем счетчик независимо от того, была ли показана реклама
                         state.levelsCompletedSinceAd = 0;
                         await saveData('levelsCompletedSinceAd', 0);
                     }
@@ -1304,6 +1310,7 @@
                 
                 state.musicEnabled = storedData.musicEnabled !== null ? storedData.musicEnabled : true;
                 state.sfxEnabled = storedData.sfxEnabled !== null ? storedData.sfxEnabled : true;
+                // ADDED: Load the ad counter from storage on startup
                 state.levelsCompletedSinceAd = storedData.levelsCompletedSinceAd || 0;
                 state.theme = storedData.theme !== null ? storedData.theme : false;
 
@@ -1341,6 +1348,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
