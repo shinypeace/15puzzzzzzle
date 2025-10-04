@@ -935,10 +935,26 @@
                 showModal('win');
             }
 
-            // --- ИСПРАВЛЕНИЕ ЛОГИКИ РЕКЛАМЫ ---
+            // --- Ad Logic ---
+            const showInterstitialAd = async () => {
+                state.levelsCompletedSinceAd++;
+                await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
+
+                if (state.levelsCompletedSinceAd >= 2) {
+                    try {
+                        await vkBridge.send('VKWebAppShowInterstitialAd');
+                    } catch (e) {
+                        console.log("Interstitial Ad error:", e);
+                    } finally {
+                        state.levelsCompletedSinceAd = 0;
+                        await saveData('levelsCompletedSinceAd', 0);
+                    }
+                }
+            };
+
             const handlePostWinTasks = async () => {
                 try {
-                    // Сохранение прогресса для конкретного режима
+                    // Save progress
                     if (state.gameMode === 'image' && state.category) {
                         await saveCategoryProgress(state.category, state.currentLevel + 1);
                     }
@@ -946,22 +962,11 @@
                         await saveClassicStats();
                     }
                     
-                    // Универсальная логика рекламы
-                    // Увеличиваем счетчик после каждой победы
-                    state.levelsCompletedSinceAd++;
-                    await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
+                    // Show ad
+                    await showInterstitialAd();
 
-                    // Показываем рекламу после каждых 2 пройденных уровней
-                    if (state.levelsCompletedSinceAd >= 2) {
-                        // ИСПРАВЛЕНО: Использован правильный метод 'VKWebAppShowInterstitialAd'
-                        await vkBridge.send('VKWebAppShowInterstitialAd').catch(e => console.log("Interstitial Ad error:", e));
-                        
-                        // Сбрасываем счетчик
-                        state.levelsCompletedSinceAd = 0;
-                        await saveData('levelsCompletedSinceAd', 0);
-                    }
                 } catch (error) {
-                    console.error("Error saving game progress:", error);
+                    console.error("Error in post-win tasks:", error);
                 }
             };
             
@@ -1349,3 +1354,4 @@
     </script>
 </body>
 </html>
+
