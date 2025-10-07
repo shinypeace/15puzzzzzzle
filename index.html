@@ -500,7 +500,7 @@
                 mainMenu: document.getElementById('main-menu'),
                 classicMenu: document.getElementById('classic-menu'),
                 categoryMenu: document.getElementById('category-menu'),
-                customPhotoMenu: document.getElementById('custom-photo-menu'), // ADDED: New screen for custom photo size selection
+                customPhotoMenu: document.getElementById('custom-photo-menu'),
                 game: document.getElementById('game-screen'),
             };
             const modals = {
@@ -945,33 +945,18 @@
                 showModal('win');
             }
 
-            // --- FIXED: Ad Logic ---
+            // --- REPLACED: Ad Logic from Primer.docx ---
             const showInterstitialAd = async () => {
                 state.levelsCompletedSinceAd++;
                 await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
-                console.log(`Levels completed since last ad: ${state.levelsCompletedSinceAd}. Required: 2.`);
 
                 if (state.levelsCompletedSinceAd >= 2) {
-                    console.log('Attempting to show interstitial ad...');
                     try {
-                        const checkResult = await vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' });
-                        console.log('Ad availability check:', checkResult);
-                        
-                        if (checkResult.result) {
-                            const adResult = await vkBridge.send('VKWebAppShowInterstitialAd');
-                            console.log('Interstitial ad result:', adResult);
-                            if (adResult.result) {
-                                console.log('Ad was shown, resetting counter.');
-                                state.levelsCompletedSinceAd = 0;
-                                await saveData('levelsCompletedSinceAd', 0);
-                            } else {
-                                 console.log('Ad was not shown (e.g., user closed early). Counter not reset.');
-                            }
-                        } else {
-                            console.log('Interstitial ad not available/loaded. Skipping show.');
-                        }
+                        await vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' });
+                        state.levelsCompletedSinceAd = 0;
+                        await saveData('levelsCompletedSinceAd', 0);
                     } catch (e) {
-                        console.error("Interstitial Ad VK Bridge error:", e);
+                        console.error("Interstitial Ad Error:", e);
                     }
                 }
             };
@@ -1098,25 +1083,23 @@
             
             document.getElementById('custom-photo-btn').addEventListener('click', () => imageLoader.click());
             
-            // MODIFIED: Handle custom photo selection to show size menu
             imageLoader.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
                     reader.onload = async (event) => {
                         try {
                             const croppedImageSrc = await loadAndCropImage(event.target.result);
-                            state.customImageSrc = croppedImageSrc; // Store the image
-                            showScreen('customPhotoMenu'); // Show size selection screen
+                            state.customImageSrc = croppedImageSrc;
+                            showScreen('customPhotoMenu');
                         } catch (error) {
                             showAlert('Ошибка файла', 'Не удалось обработать выбранное изображение.');
                         }
                     };
                     reader.readAsDataURL(e.target.files[0]);
-                    e.target.value = null; // Reset input to allow selecting the same file again
+                    e.target.value = null;
                 }
             });
 
-            // ADDED: Listener for the new custom photo size buttons
             document.querySelectorAll('.custom-size-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const size = parseInt(btn.dataset.size, 10);
@@ -1385,3 +1368,4 @@
     </script>
 </body>
 </html>
+
