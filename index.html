@@ -318,6 +318,21 @@
             </main>
         </div>
 
+        <!-- ===== NEW: Custom Photo Size Selection Screen ===== -->
+        <div id="custom-photo-menu" class="screen hidden flex flex-col p-8">
+            <header class="flex items-center mb-8">
+                <button class="back-btn btn btn-secondary p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-center flex-grow -ml-12">Размер поля</h2>
+            </header>
+            <main class="flex-grow flex flex-col justify-center gap-4">
+                 <button data-size="4" class="custom-size-btn btn bg-classic-1 text-classic-1 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">4 x 4</button>
+                 <button data-size="5" class="custom-size-btn btn bg-classic-2 text-classic-2 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">5 x 5</button>
+                 <button data-size="6" class="custom-size-btn btn bg-classic-3 text-classic-3 w-full py-4 rounded-xl text-lg font-bold ring-2 ring-inset ring-black/10">6 x 6</button>
+            </main>
+        </div>
+
         <!-- ===== Game Screen ===== -->
         <div id="game-screen" class="screen hidden flex flex-col justify-between p-4 sm:p-6">
             <header class="grid grid-cols-[1fr_auto_1fr] items-center w-full mb-4 gap-2">
@@ -475,8 +490,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- JS height fix removed in favor of a more robust pure CSS solution ---
-
             // --- VK Bridge Initialization ---
             vkBridge.send('VKWebAppInit');
             vkBridge.send('VKWebAppShowBannerAd', { banner_location: 'bottom' })
@@ -487,6 +500,7 @@
                 mainMenu: document.getElementById('main-menu'),
                 classicMenu: document.getElementById('classic-menu'),
                 categoryMenu: document.getElementById('category-menu'),
+                customPhotoMenu: document.getElementById('custom-photo-menu'), // ADDED: New screen for custom photo size selection
                 game: document.getElementById('game-screen'),
             };
             const modals = {
@@ -527,7 +541,6 @@
                 sfxEnabled: true,
                 musicEnabled: true,
                 hintsEnabled: false,
-                // ADDED: Counter for interstitial ads
                 levelsCompletedSinceAd: 0,
                 isDataLoaded: false,
             };
@@ -635,7 +648,6 @@
 
                 puzzleBoard.classList.remove('puzzle-won');
                 
-                // Restore default tile transition
                 puzzleBoard.querySelectorAll('.tile').forEach(tile => {
                     tile.style.transition = 'top 0.2s cubic-bezier(0.25, 1, 0.5, 1), left 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
                 });
@@ -872,8 +884,6 @@
                 startTimer();
             };
 
-            // --- REFACTORED WIN LOGIC ---
-
             const initiateWinSequence = () => {
                 state.isGameActive = false;
                 clearInterval(state.timerInterval);
@@ -935,36 +945,46 @@
                 showModal('win');
             }
 
-            // --- Ad Logic ---
+            // --- FIXED: Ad Logic ---
             const showInterstitialAd = async () => {
                 state.levelsCompletedSinceAd++;
                 await saveData('levelsCompletedSinceAd', state.levelsCompletedSinceAd);
+                console.log(`Levels completed since last ad: ${state.levelsCompletedSinceAd}. Required: 2.`);
 
                 if (state.levelsCompletedSinceAd >= 2) {
+                    console.log('Attempting to show interstitial ad...');
                     try {
-                        await vkBridge.send('VKWebAppShowInterstitialAd');
+                        const checkResult = await vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' });
+                        console.log('Ad availability check:', checkResult);
+                        
+                        if (checkResult.result) {
+                            const adResult = await vkBridge.send('VKWebAppShowInterstitialAd');
+                            console.log('Interstitial ad result:', adResult);
+                            if (adResult.result) {
+                                console.log('Ad was shown, resetting counter.');
+                                state.levelsCompletedSinceAd = 0;
+                                await saveData('levelsCompletedSinceAd', 0);
+                            } else {
+                                 console.log('Ad was not shown (e.g., user closed early). Counter not reset.');
+                            }
+                        } else {
+                            console.log('Interstitial ad not available/loaded. Skipping show.');
+                        }
                     } catch (e) {
-                        console.log("Interstitial Ad error:", e);
-                    } finally {
-                        state.levelsCompletedSinceAd = 0;
-                        await saveData('levelsCompletedSinceAd', 0);
+                        console.error("Interstitial Ad VK Bridge error:", e);
                     }
                 }
             };
 
             const handlePostWinTasks = async () => {
                 try {
-                    // Save progress
                     if (state.gameMode === 'image' && state.category) {
                         await saveCategoryProgress(state.category, state.currentLevel + 1);
                     }
                     if (state.gameMode === 'classic') {
                         await saveClassicStats();
                     }
-                    
-                    // Show ad
                     await showInterstitialAd();
-
                 } catch (error) {
                     console.error("Error in post-win tasks:", error);
                 }
@@ -974,7 +994,6 @@
                 showWinModal();
                 handlePostWinTasks();
             };
-
 
             const startTimer = () => {
                 clearInterval(state.timerInterval);
@@ -1078,19 +1097,31 @@
             });
             
             document.getElementById('custom-photo-btn').addEventListener('click', () => imageLoader.click());
+            
+            // MODIFIED: Handle custom photo selection to show size menu
             imageLoader.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
                     reader.onload = async (event) => {
                         try {
                             const croppedImageSrc = await loadAndCropImage(event.target.result);
-                            initGame('image', { imageSrc: croppedImageSrc, size: 4 });
+                            state.customImageSrc = croppedImageSrc; // Store the image
+                            showScreen('customPhotoMenu'); // Show size selection screen
                         } catch (error) {
                             showAlert('Ошибка файла', 'Не удалось обработать выбранное изображение.');
                         }
                     };
                     reader.readAsDataURL(e.target.files[0]);
+                    e.target.value = null; // Reset input to allow selecting the same file again
                 }
+            });
+
+            // ADDED: Listener for the new custom photo size buttons
+            document.querySelectorAll('.custom-size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const size = parseInt(btn.dataset.size, 10);
+                    initGame('image', { imageSrc: state.customImageSrc, size });
+                });
             });
             
             document.querySelectorAll('.back-btn').forEach(btn => {
@@ -1354,4 +1385,3 @@
     </script>
 </body>
 </html>
-
